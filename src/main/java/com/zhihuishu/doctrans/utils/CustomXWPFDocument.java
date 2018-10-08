@@ -1,8 +1,6 @@
 package com.zhihuishu.doctrans.utils;
 
 
-import java.io.IOException;
-import java.io.InputStream;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -11,6 +9,9 @@ import org.apache.xmlbeans.XmlToken;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D;
 import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 自定义 XWPFDocument，并重写 createPicture()方法
@@ -30,11 +31,11 @@ public class CustomXWPFDocument extends XWPFDocument {
 
     /**
      * @param id
-     * @param width 宽
-     * @param height 高
-     * @param paragraph  段落
+     * @param width     宽
+     * @param height    高
+     * @param paragraph 段落
      */
-    public void createPicture(int id, int width, int height,XWPFParagraph paragraph) {
+    public void createPicture(int id, int width, int height, XWPFParagraph paragraph) {
         final int EMU = 9525;
         width *= EMU;
         height *= EMU;

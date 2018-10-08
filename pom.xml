@@ -137,8 +137,18 @@
             <version>2.8.1</version>
         </dependency>
 
-
-
+        <!-- toolkit -->
+        <dependency>
+            <groupId>com.zhihuishu.toolkit</groupId>
+            <artifactId>zhihuishu-toolkit</artifactId>
+            <version>2.2.9</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
 
@@ -161,9 +171,7 @@
         </plugins>
     </build>
 
-
     <profiles>
-
         <!-- 开发调试 -->
         <profile>
             <id>development</id>
@@ -194,8 +202,6 @@
                 </resources>
             </build>
         </profile>
-
     </profiles>
-
 
 </project>
