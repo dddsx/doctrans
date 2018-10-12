@@ -35,7 +35,7 @@ public class XWPFUtils {
             while (c.toNextSelection()) {
                 XmlObject o = c.getObject();
                 //如果子元素是<w:drawing>这样的形式，使用CTDrawing保存图片
-                if (o instanceof CTDrawing) {
+/*                if (o instanceof CTDrawing) {
                     CTDrawing drawing = (CTDrawing) o;
                     CTInline[] ctInlines = drawing.getInlineArray();
                     for (CTInline ctInline : ctInlines) {
@@ -53,19 +53,22 @@ public class XWPFUtils {
                             }
                         }
                     }
-                }
+                }*/
                 //使用CTObject保存图片
                 //<w:object>形式
                 if (o instanceof CTObject) {
                     CTObject object = (CTObject) o;
-                    System.out.println(object);
+                    //System.out.println(object);
                     XmlCursor w = object.newCursor();
                     w.selectPath("./*");
                     while (w.toNextSelection()) {
                         XmlObject xmlObject = w.getObject();
                         if (xmlObject instanceof CTShape) {
                             CTShape shape = (CTShape) xmlObject;
-                            imageBundleList.add(shape.getImagedataArray()[0].getId2());
+                            String ref = shape.getImagedataArray()[0].getId2();
+                            imageBundleList.add(ref);
+                            // 设置占位标记
+                            run.setText("#sharp-" + ref);
                         }
                     }
                 }

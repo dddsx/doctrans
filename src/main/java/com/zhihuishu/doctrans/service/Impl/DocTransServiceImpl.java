@@ -5,12 +5,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhihuishu.doctrans.service.DocTransService;
 import com.zhihuishu.doctrans.utils.CustomXWPFDocument;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
+import com.zhihuishu.doctrans.utils.XWPFUtils;
 import org.apache.poi.xwpf.converter.core.BasicURIResolver;
 import org.apache.poi.xwpf.converter.core.FileImageExtractor;
 import org.apache.poi.xwpf.converter.xhtml.XHTMLConverter;
 import org.apache.poi.xwpf.converter.xhtml.XHTMLOptions;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,7 +107,21 @@ public class DocTransServiceImpl implements DocTransService {
         OutputStreamWriter outputStreamWriter = null;
         try {
             CustomXWPFDocument document = new CustomXWPFDocument(new FileInputStream(sourceFileName));
-            XHTMLOptions options = XHTMLOptions.create();
+
+            // 读取位图位置，并设置占位标记
+            List<XWPFParagraph> paragraphList = document.getParagraphs();
+            for (int i = 0; i < paragraphList.size(); i++) {
+                List<String> imageBundleList = XWPFUtils.readImageInParagraph(paragraphList.get(i));
+                if(!CollectionUtils.isEmpty(imageBundleList)){
+                    for(String pictureId:imageBundleList){
+                        XWPFPictureData pictureData = document.getPictureDataByID(pictureId);
+                        String imageName = pictureData.getFileName();
+                        String lastParagraphText = paragraphList.get(i-1).getParagraphText();
+                        System.out.println(pictureId +"\t|" + imageName + "\t|" + lastParagraphText);
+                    }
+                }
+            }
+
             // 文档图片内容
             List<XWPFPictureData> pictures = document.getAllPictures();
             for (XWPFPictureData picture : pictures) {
@@ -119,10 +136,12 @@ public class DocTransServiceImpl implements DocTransService {
                     e.printStackTrace();
                 }
             }
+            XHTMLOptions options = XHTMLOptions.create();
             // 存放图片的文件夹
             options.setExtractor(new FileImageExtractor(new File(DATA_IMAGE)));
             // html中图片的路径
             options.URIResolver(new BasicURIResolver("image"));
+            options.setFragment(true);
             outputStreamWriter = new OutputStreamWriter(new FileOutputStream(targetFileName), "utf-8");
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, outputStreamWriter, options);
