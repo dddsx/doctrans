@@ -95,7 +95,7 @@ public class DocTransServiceImpl implements DocTransService {
                 }
             }
             XHTMLOptions options = XHTMLOptions.create();
-            options.setImageManager(new ImageManager(null, DATA_IMAGE));
+            options.setImageManager(new ImageManager(new File(DATA_IMAGE_SOURCE), ""));
             options.setFragment(true);
             options.setIgnoreStylesIfUnused(false);
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
@@ -122,7 +122,8 @@ public class DocTransServiceImpl implements DocTransService {
                             if (data != null) {
                                 ossUrl = data.getString("path");
                                 //替换图片链接
-                                String imgUrl = (f + "").replaceAll("\\\\", "\\/").replace("/data/", "");
+                                String path = f.toString();
+                                String imgUrl = path.substring(path.lastIndexOf("\\"));
                                 htmlResult = htmlResult.replace(imgUrl, ossUrl);
                             }
                         }
