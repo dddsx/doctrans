@@ -1,13 +1,10 @@
 package com.zhihuishu.doctrans.utils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import org.apache.commons.io.FileUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 public class MyFileUtil {
 
@@ -67,17 +64,5 @@ public class MyFileUtil {
         } finally {
             return file;
         }
-    }
-
-    public static File inputStreamToFile(MultipartFile file, HttpServletRequest request,String realPath) {
-        File file_return = null;
-        try {
-//            String realPath = request.getSession().getServletContext().getRealPath("/data/download");
-            FileUtils.copyInputStreamToFile(file.getInputStream(), new File(realPath, file.getOriginalFilename()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        file_return = new File(realPath+file.getOriginalFilename());
-        return file_return;
     }
 }

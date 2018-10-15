@@ -6,6 +6,7 @@ import com.zhihuishu.doctrans.service.DocTransService;
 import com.zhihuishu.doctrans.utils.CustomXWPFDocument;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
 import com.zhihuishu.doctrans.utils.XWPFUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.converter.core.BasicURIResolver;
 import org.apache.poi.xwpf.converter.core.FileImageExtractor;
 import org.apache.poi.xwpf.converter.xhtml.XHTMLConverter;
@@ -36,78 +37,40 @@ public class DocTransServiceImpl implements DocTransService {
     //http://file.zhihuishu.com/zhs_yufa_150820/ablecommons/demo/201809/3404484743d64189ba968d6328161c9f.docx
     @Override
     public String docx2html(MultipartFile multipartFile, String url, HttpServletRequest request) {
-        String str = "";
-        String sourceFileName = "";
+        String htmlResult = "";
         File file = null;
-        //通过url下载图片
-        if (url != null && !StringUtils.isEmpty(url)) {
+        // 尝试从url下载
+        if (!StringUtils.isEmpty(url)) {
             file = MyFileUtil.downloadFile(url, DATA_DOMNLOAD);
         }
-        //文件不存在
-        if ((file == null || !file.exists()) && multipartFile != null && multipartFile.getSize() > 0) {
+
+        // 尝试从MultipartFile下载
+        boolean hasInputFile = multipartFile != null && !StringUtils.isEmpty(multipartFile.getOriginalFilename())
+                && multipartFile.getSize() > 0;
+        if ((file == null || !file.exists()) && hasInputFile) {
             try {
-                file = MyFileUtil.inputStreamToFile(multipartFile, request, DATA_DOMNLOAD);
+                file = new File(DATA_DOMNLOAD, multipartFile.getOriginalFilename());
+                FileUtils.copyInputStreamToFile(multipartFile.getInputStream(), file);
             } catch (Exception e) {
                 e.printStackTrace();
-                file = null;
+                return "";
             }
-
         }
+
         if (file == null) {
             return "";
         }
 
-        sourceFileName = DATA_DOMNLOAD + file.getName();
         String filename = file.getName();
         if (!StringUtils.isEmpty(filename)) {
             filename = filename.split("\\.")[0];
         }
-        File filehtmldir = new File(DATA_HTML);
-        if (filehtmldir.isDirectory()) {
 
-        } else {
-            try {
-                filehtmldir.mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        filehtmldir = new File(DATA_IMAGE);
-        if (filehtmldir.isDirectory()) {
+        String htmlFilename = DATA_HTML + filename + ".html";
+        File htmlFile = new File(htmlFilename);
 
-        } else {
-            try {
-                filehtmldir.mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        filehtmldir = new File(DATA_IMAGE + "word/");
-        if (filehtmldir.isDirectory()) {
-
-        } else {
-            try {
-                filehtmldir.mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        filehtmldir = new File(DATA_IMAGE_SOURCE);
-        if (filehtmldir.isDirectory()) {
-
-        } else {
-            try {
-                filehtmldir.mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        String targetFileName = DATA_HTML + filename + ".html";
-        OutputStreamWriter outputStreamWriter = null;
-        try {
-            CustomXWPFDocument document = new CustomXWPFDocument(new FileInputStream(sourceFileName));
-
+        try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(FileUtils.openOutputStream(htmlFile), "utf-8")){
+            CustomXWPFDocument document = new CustomXWPFDocument(new FileInputStream(file));
             // 读取位图位置，并设置占位标记
             List<XWPFParagraph> paragraphList = document.getParagraphs();
             for (int i = 0; i < paragraphList.size(); i++) {
@@ -126,12 +89,8 @@ public class DocTransServiceImpl implements DocTransService {
             List<XWPFPictureData> pictures = document.getAllPictures();
             for (XWPFPictureData picture : pictures) {
                 try {
-                    byte[] bytev = picture.getData();
-                    // 输出图片到磁盘
-                    FileOutputStream out = new FileOutputStream(
-                            DATA_IMAGE_SOURCE + picture.getFileName());
-                    out.write(bytev);
-                    out.close();
+                    File imgFile = new File(DATA_IMAGE_SOURCE + picture.getFileName());
+                    FileUtils.writeByteArrayToFile(imgFile, picture.getData());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -142,27 +101,12 @@ public class DocTransServiceImpl implements DocTransService {
             // html中图片的路径
             options.URIResolver(new BasicURIResolver("image"));
             options.setFragment(true);
-            outputStreamWriter = new OutputStreamWriter(new FileOutputStream(targetFileName), "utf-8");
+            options.setIgnoreStylesIfUnused(false);
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, outputStreamWriter, options);
 
-            // 读取html并返回
-            // 定义一个file对象，用来初始化FileReader
-            File filehtml = new File(targetFileName);
-            // 定义一个fileReader对象，用来初始化BufferedReader
-            FileReader reader = new FileReader(filehtml);
-            // new一个BufferedReader对象，将文件内容读取到缓存
-            BufferedReader bReader = new BufferedReader(reader);
-            // 定义一个字符串缓存，将字符串存放缓存中
-            StringBuilder sb = new StringBuilder();
-            String s = "";
-            // 逐行读取文件内容，不读取换行符和末尾的空格
-            while ((s = bReader.readLine()) != null) {
-                // 将读取的字符串添加换行符后累加存放在缓存中
-                sb.append(s).append("\n");
-            }
-            bReader.close();
-            str = sb.toString();
+            htmlResult = FileUtils.readFileToString(htmlFile, "UTF-8");
+
             // 遍历文件夹中的图片
             // 获取其file对象
             File dataimg = new File(DATA_IMAGE_SOURCE);
@@ -183,7 +127,7 @@ public class DocTransServiceImpl implements DocTransService {
                                 ossUrl = data.getString("path");
                                 //替换图片链接
                                 String imgUrl = (f + "").replaceAll("\\\\", "\\/").replace("/data/", "");
-                                str = str.replace(imgUrl, ossUrl);
+                                htmlResult = htmlResult.replace(imgUrl, ossUrl);
                             }
                         }
                         f.delete();
@@ -193,8 +137,8 @@ public class DocTransServiceImpl implements DocTransService {
                 }
             }
             //删除本地文件
-            if (filehtml != null) {
-                filehtml.delete();
+            if (htmlFile != null) {
+                htmlFile.delete();
             }
             if (file != null) {
                 file.delete();
@@ -202,14 +146,8 @@ public class DocTransServiceImpl implements DocTransService {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (outputStreamWriter != null) {
-                try {
-                    outputStreamWriter.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+
         }
-        return str;
+        return htmlResult;
     }
 }
