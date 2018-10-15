@@ -6,11 +6,10 @@ import com.zhihuishu.doctrans.service.DocTransService;
 import com.zhihuishu.doctrans.utils.CustomXWPFDocument;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
 import com.zhihuishu.doctrans.utils.XWPFUtils;
+import fr.opensagres.poi.xwpf.converter.core.ImageManager;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.xwpf.converter.core.BasicURIResolver;
-import org.apache.poi.xwpf.converter.core.FileImageExtractor;
-import org.apache.poi.xwpf.converter.xhtml.XHTMLConverter;
-import org.apache.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 import org.springframework.stereotype.Service;
@@ -96,10 +95,7 @@ public class DocTransServiceImpl implements DocTransService {
                 }
             }
             XHTMLOptions options = XHTMLOptions.create();
-            // 存放图片的文件夹
-            options.setExtractor(new FileImageExtractor(new File(DATA_IMAGE)));
-            // html中图片的路径
-            options.URIResolver(new BasicURIResolver("image"));
+            options.setImageManager(new ImageManager(null, DATA_IMAGE));
             options.setFragment(true);
             options.setIgnoreStylesIfUnused(false);
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
