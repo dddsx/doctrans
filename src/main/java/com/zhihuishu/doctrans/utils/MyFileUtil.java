@@ -1,8 +1,11 @@
 package com.zhihuishu.doctrans.utils;
 
+import com.able.base.ftp.oss.OSSPublicUploadInterface;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -10,6 +13,8 @@ public class MyFileUtil {
 
     public static File downloadFile(String urlPath, String downloadDir) {
         File file = null;
+        OutputStream out = null;
+        BufferedInputStream bin = null;
         try {
             // 统一资源
             URL url = new URL(urlPath);
@@ -33,16 +38,14 @@ public class MyFileUtil {
 
             System.out.println("file length---->" + fileLength);
 
-            URLConnection con = url.openConnection();
-
-            BufferedInputStream bin = new BufferedInputStream(httpURLConnection.getInputStream());
+            bin = new BufferedInputStream(httpURLConnection.getInputStream());
 
             String path = downloadDir + File.separatorChar + fileFullName;
             file = new File(path);
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
-            OutputStream out = new FileOutputStream(file);
+            out = new FileOutputStream(file);
             int size = 0;
             int len = 0;
             byte[] buf = new byte[1024];
@@ -53,16 +56,41 @@ public class MyFileUtil {
                 // System.out.println("下载了-------> " + len * 100 / fileLength +
                 // "%\n");
             }
-            bin.close();
-            out.close();
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
-            return file;
+            if(bin != null) {
+                try {
+                    bin.close();
+                } catch (IOException ignored) {
+
+                }
+            }
+            if(out != null){
+                try {
+                    out.close();
+                } catch (IOException ignored) {
+
+                }
+            }
         }
+        return file;
+    }
+
+    public static String uploadFileToOSS(File file){
+        String ossUrl = null;
+        try {
+            ossUrl = OSSPublicUploadInterface.ftpAttachment(file, "doctrans", "docx2html");
+            if (!StringUtils.isEmpty(ossUrl)) {
+                JSONObject jsonObject = JSONObject.parseObject(ossUrl);
+                JSONObject data = jsonObject.getJSONObject("data");
+                if (data != null) {
+                    ossUrl = data.getString("path");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ossUrl;
     }
 }

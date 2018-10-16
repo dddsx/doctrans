@@ -68,7 +68,7 @@ public class XWPFUtils {
                             String ref = shape.getImagedataArray()[0].getId2();
                             imageBundleList.add(ref);
                             // 设置占位标记
-                            run.setText("#sharp-" + ref);
+                            run.setText("{sharp:" + ref + "}");
                         }
                     }
                 }
