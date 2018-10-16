@@ -17,24 +17,25 @@ import java.util.List;
 
 public class XWPFUtils {
 
-    //获取某一个段落中的所有图片索引
+    /**
+     * 读取段落中的图片信息，为矢量图设置占位符，并返回矢量图索引ref列表
+     */
     public static List<String> readImageInParagraph(XWPFParagraph paragraph) {
-        //图片索引List
+        // 图片索引List
         List<String> imageBundleList = new ArrayList<String>();
 
-        //段落中所有XWPFRun
+        // 段落中所有XWPFRun
         List<XWPFRun> runList = paragraph.getRuns();
         for (XWPFRun run : runList) {
-            //XWPFRun是POI对xml元素解析后生成的自己的属性，无法通过xml解析，需要先转化成CTR
+            // XWPFRun是POI对xml元素解析后生成的自己的属性，无法通过xml解析，需要先转化成CTR
             CTR ctr = run.getCTR();
-
-            //对子元素进行遍历
+            // 对子元素进行遍历
             XmlCursor c = ctr.newCursor();
-            //这个就是拿到所有的子元素：
+            // 这个就是拿到所有的子元素：
             c.selectPath("./*");
             while (c.toNextSelection()) {
                 XmlObject o = c.getObject();
-                //如果子元素是<w:drawing>这样的形式，使用CTDrawing保存图片
+                // 如果子元素是<w:drawing>这样的形式，使用CTDrawing保存图片
 /*                if (o instanceof CTDrawing) {
                     CTDrawing drawing = (CTDrawing) o;
                     CTInline[] ctInlines = drawing.getInlineArray();
@@ -54,8 +55,8 @@ public class XWPFUtils {
                         }
                     }
                 }*/
-                //使用CTObject保存图片
-                //<w:object>形式
+
+                // 使用CTObject读取<w:object>形式的图片
                 if (o instanceof CTObject) {
                     CTObject object = (CTObject) o;
                     //System.out.println(object);
@@ -68,7 +69,7 @@ public class XWPFUtils {
                             String ref = shape.getImagedataArray()[0].getId2();
                             imageBundleList.add(ref);
                             // 设置占位标记
-                            run.setText("{sharp:" + ref + "}");
+                            run.setText(getRefPlaceholder(ref));
                         }
                     }
                 }
@@ -77,4 +78,7 @@ public class XWPFUtils {
         return imageBundleList;
     }
 
+    public static String getRefPlaceholder(String ref){
+        return "{sharp:" + ref + "}";
+    }
 }
