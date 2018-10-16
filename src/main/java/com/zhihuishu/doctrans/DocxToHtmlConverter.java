@@ -29,8 +29,6 @@ public class DocxToHtmlConverter {
 
     private static final String DATA_DOMNLOAD = "/data/download/";
 
-
-
     /**
      * 将docx文件识别为html
      * @param inputStream
@@ -106,7 +104,7 @@ public class DocxToHtmlConverter {
                 if (!imgFile.isDirectory()) {
                     String ossUrl = MyFileUtil.uploadFileToOSS(imgFile);
                     String path = imgFile.toString();
-                    String imgUrl = imgFile.toString().substring(path.lastIndexOf("\\"));
+                    String imgUrl = imgFile.toString().substring(path.lastIndexOf(File.separator));
                     htmlResult = htmlResult.replace(imgUrl, ossUrl);
                     imgFile.delete();
                 }
@@ -117,6 +115,6 @@ public class DocxToHtmlConverter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return StringEscapeUtils.unescapeHtml(htmlResult);
+        return htmlResult;
     }
 }
