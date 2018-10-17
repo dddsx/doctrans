@@ -1,15 +1,16 @@
 package com.zhihuishu.doctrans;
 
+import com.zhihuishu.doctrans.model.Shape;
 import com.zhihuishu.doctrans.utils.Constant;
+import com.zhihuishu.doctrans.utils.ImgConverter;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
-import com.zhihuishu.doctrans.utils.WmfConverter;
 import com.zhihuishu.doctrans.utils.XWPFUtils;
 import fr.opensagres.poi.xwpf.converter.core.ImageManager;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
@@ -34,23 +35,17 @@ public class DocxToHtmlConverter {
     /**
      * 将docx文件识别为html，两个参数需有其一不为null
      * @param inputStream
-     * @param url 比如：http://file.zhihuishu.com/zhs_yufa_150820/ablecommons/demo/201809/3404484743d64189ba968d6328161c9f.docx
      * @return html字符串
      */
-    public static String docx2html(InputStream inputStream, String url) {
+    public static String docx2html(InputStream inputStream) {
         String htmlResult = "";
         File docx;
-        // 从url或输入流中读取文件
-        if (!StringUtils.isEmpty(url)) {
-            docx = MyFileUtil.downloadFile(url, DOMNLOAD_PATH);
-        } else {
-            try {
-                docx = new File(DOMNLOAD_PATH, UUID.randomUUID().toString() + Constant.EXT_DOCX);
-                FileUtils.copyInputStreamToFile(inputStream, docx);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "";
-            }
+        try {
+            docx = new File(DOMNLOAD_PATH, UUID.randomUUID().toString() + Constant.EXT_DOCX);
+            FileUtils.copyInputStreamToFile(inputStream, docx);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
 
         String docxName = docx.getName();
@@ -59,18 +54,18 @@ public class DocxToHtmlConverter {
 
         try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(FileUtils.openOutputStream(htmlFile), "utf-8")){
             XWPFDocument document = new XWPFDocument(new FileInputStream(docx));
-            // 读取位图位置，设置占位标记"{sharp:rIdX}"，记录rId以及对应的文件名
             List<XWPFParagraph> paragraphList = document.getParagraphs();
-            Map<String, String> imgRefMap = new HashMap<>();
+            Map<String, Shape> shapeMap = new HashMap<>();
             for (XWPFParagraph paragraph : paragraphList) {
-                List<String> imageBundleList = XWPFUtils.readImageInParagraph(paragraph);
-                if(imageBundleList == null || imageBundleList.size() == 0){
+                List<Shape> shapeList = XWPFUtils.extractShapeInParagraph(paragraph);
+                if(shapeList == null || shapeList.size() == 0){
                     continue;
                 }
-                for (String pictureId : imageBundleList) {
-                    XWPFPictureData pictureData = document.getPictureDataByID(pictureId);
+                for (Shape shape : shapeList) {
+                    XWPFPictureData pictureData = document.getPictureDataByID(shape.getRef());
                     String imageName = pictureData.getFileName();
-                    imgRefMap.put(imageName, pictureId);
+                    shape.setImgName(imageName);
+                    shapeMap.put(imageName, shape);
                 }
             }
 
@@ -100,16 +95,20 @@ public class DocxToHtmlConverter {
                     String imgName = imgFile.getName();
                     if(FilenameUtils.isExtension(imgName, Constant.FORMAT_WMF)){
                         File svgFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_SVG);
-                        WmfConverter.convertToSvg(imgFile, svgFile);
-                        String imgOssUrl = MyFileUtil.uploadFileToOSS(svgFile);
-                        String ref = imgRefMap.get(imgName);
-                        String imgHtmlUrl = XWPFUtils.getRefPlaceholder(ref);
-                        htmlResult = htmlResult.replace(imgHtmlUrl, imgOssUrl);
+                        File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
+                        ImgConverter.convertWmf2Svg(imgFile, svgFile);
+                        ImgConverter.convertSvg2Png(svgFile, pngFile);
+                        String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);
+
                         svgFile.delete();
+                        pngFile.delete();
+
+                        Shape shape = shapeMap.get(imgName);
+                        String imgRefPlaceholder = XWPFUtils.createRefPlaceholder(shape.getRef());
+                        htmlResult = htmlResult.replace(imgRefPlaceholder, createImgTag(imgOssUrl, shape.getStyle()));
                     } else {
                         String imgOssUrl = MyFileUtil.uploadFileToOSS(imgFile);
-                        String path = imgFile.getPath();
-                        String imgHtmlUrl = path.substring(path.lastIndexOf(File.separator));
+                        String imgHtmlUrl = File.separator + imgFile.getName();
                         htmlResult = htmlResult.replace(imgHtmlUrl, imgOssUrl);
                     }
                     imgFile.delete();
@@ -122,5 +121,9 @@ public class DocxToHtmlConverter {
             e.printStackTrace();
         }
         return htmlResult;
+    }
+
+    private static String createImgTag(String url, String style){
+        return "<img src=\"" + url + "\" style=\"" + style + "\">";
     }
 }

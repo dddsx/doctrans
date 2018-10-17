@@ -10,5 +10,7 @@ public class Constant {
 
     public final static String EXT_SVG = ".svg";
 
+    public final static String EXT_PNG = ".png";
+
     public final static String FORMAT_WMF = "wmf";
 }

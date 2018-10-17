@@ -2,7 +2,7 @@ package com.zhihuishu.doctrans.utils;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -23,7 +23,7 @@ public class MyFileUtil {
             // http的连接类
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
             // 设定请求的方法，默认是GET
-            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestMethod("GET");
             // 设置字符编码
             httpURLConnection.setRequestProperty("Charset", "UTF-8");
             // 打开到此 URL 引用的资源的通信链接（如果尚未建立这样的连接）。

@@ -1,14 +1,11 @@
 package com.zhihuishu.doctrans.utils;
 
 import com.microsoft.schemas.vml.CTShape;
+import com.zhihuishu.doctrans.model.Shape;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTGraphicalObject;
-import org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture;
-import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDrawing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
@@ -18,11 +15,11 @@ import java.util.List;
 public class XWPFUtils {
 
     /**
-     * 读取段落中的图片信息，为矢量图设置占位符，并返回矢量图索引ref列表
+     * 读取段落中的图片信息，为矢量图设置占位符，并返回矢量图索引列表
      */
-    public static List<String> readImageInParagraph(XWPFParagraph paragraph) {
-        // 图片索引List
-        List<String> imageBundleList = new ArrayList<String>();
+    public static List<Shape> extractShapeInParagraph(XWPFParagraph paragraph) {
+
+        List<Shape> shapeList = new ArrayList<>();
 
         // 段落中所有XWPFRun
         List<XWPFRun> runList = paragraph.getRuns();
@@ -59,26 +56,29 @@ public class XWPFUtils {
                 // 使用CTObject读取<w:object>形式的图片
                 if (o instanceof CTObject) {
                     CTObject object = (CTObject) o;
-                    //System.out.println(object);
+                    // System.out.println(object);
                     XmlCursor w = object.newCursor();
                     w.selectPath("./*");
                     while (w.toNextSelection()) {
                         XmlObject xmlObject = w.getObject();
                         if (xmlObject instanceof CTShape) {
+                            Shape s = new Shape();
                             CTShape shape = (CTShape) xmlObject;
                             String ref = shape.getImagedataArray()[0].getId2();
-                            imageBundleList.add(ref);
                             // 设置占位标记
-                            run.setText(getRefPlaceholder(ref));
+                            run.setText(createRefPlaceholder(ref));
+                            s.setRef(ref);
+                            s.setStyle(shape.getStyle());
+                            shapeList.add(s);
                         }
                     }
                 }
             }
         }
-        return imageBundleList;
+        return shapeList;
     }
 
-    public static String getRefPlaceholder(String ref){
+    public static String createRefPlaceholder(String ref){
         return "{sharp:" + ref + "}";
     }
 }
