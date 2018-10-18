@@ -9,6 +9,9 @@ import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +21,7 @@ public class XWPFUtils {
      * 读取段落中的图片信息，为矢量图设置占位符，并返回矢量图索引列表
      */
     public static List<Shape> extractShapeInParagraph(XWPFParagraph paragraph) {
-
+        // printParagraphAttr(paragraph);
         List<Shape> shapeList = new ArrayList<>();
 
         // 段落中所有XWPFRun
@@ -80,5 +83,26 @@ public class XWPFUtils {
 
     public static String createRefPlaceholder(String ref){
         return "{sharp:" + ref + "}";
+    }
+
+    private static void printParagraphAttr(XWPFParagraph paragraph) {
+        Class clazz = paragraph.getClass();
+        for (Method method : clazz.getMethods()){
+            if(!method.getName().startsWith("get")){
+                continue;
+            }
+            String returnTypeName = method.getGenericReturnType().getTypeName();
+            if(returnTypeName.equals(String.class.getTypeName()) || returnTypeName.equals(BigInteger.class.getTypeName())
+                    || returnTypeName.equals("int")) {
+                if(method.getParameterTypes().length == 0) {
+                    System.out.print(method.getName().substring(3) + ":");
+                    try {
+                        System.out.println(method.invoke(paragraph));
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 }
