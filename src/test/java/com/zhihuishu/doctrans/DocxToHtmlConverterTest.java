@@ -11,7 +11,7 @@ public class DocxToHtmlConverterTest {
     public void testDocx2html(){
         String result = null;
         try {
-            URL fileUrl = this.getClass().getClassLoader().getResource("wordtestpaper.docx");
+            URL fileUrl = this.getClass().getClassLoader().getResource("docxDemo/wordtestpaper.docx");
             result = DocxToHtmlConverter.docx2html(Objects.requireNonNull(fileUrl).openStream());
         } catch (IOException e) {
             e.printStackTrace();

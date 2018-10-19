@@ -123,6 +123,12 @@ public class DocxToHtmlConverter {
     }
 
     private static String createImgTag(String url, String style){
+        if(url == null){
+            url = "";
+        }
+        if(style == null){
+            style = "";
+        }
         return "<img src=\"" + url + "\" style=\"" + style + "\">";
     }
 }
