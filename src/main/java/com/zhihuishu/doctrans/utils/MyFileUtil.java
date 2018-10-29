@@ -2,7 +2,6 @@ package com.zhihuishu.doctrans.utils;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -81,7 +80,7 @@ public class MyFileUtil {
         String ossUrl = null;
         try {
             ossUrl = OSSPublicUploadInterface.ftpAttachment(file, "doctrans", "docx2html");
-            if (!StringUtils.isEmpty(ossUrl)) {
+            if (ossUrl != null && ossUrl.length() > 0) {
                 JSONObject jsonObject = JSONObject.parseObject(ossUrl);
                 JSONObject data = jsonObject.getJSONObject("data");
                 if (data != null) {

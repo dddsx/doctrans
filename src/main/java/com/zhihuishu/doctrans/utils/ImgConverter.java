@@ -2,11 +2,9 @@ package com.zhihuishu.doctrans.utils;
 
 import net.arnx.wmf2svg.gdi.svg.SvgGdi;
 import net.arnx.wmf2svg.gdi.wmf.WmfParser;
-import org.apache.batik.transcoder.Transcoder;
-import org.apache.batik.transcoder.TranscoderException;
-import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.*;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.batik.transcoder.wmf.tosvg.WMFTranscoder;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 
@@ -25,12 +23,14 @@ public class ImgConverter {
      * @param pngFile 输出文件
      */
     public static void convertSvg2Png(File svgFile, File pngFile) {
-        try(FileInputStream svgInput = new FileInputStream(svgFile)) {
+        try(FileInputStream svgInput = new FileInputStream(svgFile);
+            FileOutputStream pngOutput = new FileOutputStream(pngFile)
+        ) {
             String svgCode = IOUtils.toString(svgInput, "UTF-8");
             Transcoder transcoder = new PNGTranscoder();
-            svgCode = svgCode.replaceAll(":rect", "rect"); // ?
+            // svgCode = svgCode.replaceAll(":rect", "rect");
             TranscoderInput input = new TranscoderInput(new StringReader(svgCode));
-            TranscoderOutput output = new TranscoderOutput(new FileOutputStream(pngFile));
+            TranscoderOutput output = new TranscoderOutput(pngOutput);
             transcoder.transcode(input, output);
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,11 +48,12 @@ public class ImgConverter {
         ) {
             WmfParser parser = new WmfParser();
             final SvgGdi gdi = new SvgGdi(false);
+            gdi.setReplaceSymbolFont(true);
             parser.parse(in, gdi);
             Document doc = gdi.getDocument();
-//            if (svgFile.getName().endsWith(".svgz")) {
-//                out = new GZIPOutputStream(out);
-//            }
+            // if (svgFile.getName().endsWith(".svgz")) {
+            //     out = new GZIPOutputStream(out);
+            // }
             TransformerFactory factory = TransformerFactory.newInstance();
             Transformer transformer = factory.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -65,4 +66,16 @@ public class ImgConverter {
             e.printStackTrace();
         }
     }
+/*
+    public static void convertWmf2Svg2(File wmfFile, File svgFile) throws FileNotFoundException, TranscoderException {
+        TranscoderInput input = new TranscoderInput(wmfFile.toURI().toString());
+        OutputStream outFile = new FileOutputStream(svgFile);
+        TranscoderOutput output = new TranscoderOutput(outFile);
+        WMFTranscoder transcoder = new WMFTranscoder();
+        TranscodingHints hints = new TranscodingHints();
+        hints.put(WMFTranscoder.SVG_SYMBOL_TAG, "false");
+        transcoder.setTranscodingHints(hints);
+        transcoder.transcode(input, output);
+    }
+    */
 }
