@@ -5,7 +5,7 @@ import com.zhihuishu.doctrans.utils.Constant;
 import com.zhihuishu.doctrans.utils.ImgConverter;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
 import com.zhihuishu.doctrans.utils.XWPFUtils;
-import fr.opensagres.poi.xwpf.converter.core.ImageManager;
+import fr.opensagres.poi.xwpf.converter.xhtml.Base64EmbedImgManager;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.commons.io.FileUtils;
@@ -30,12 +30,15 @@ public class DocxToHtmlConverter {
      * @return html字符串
      */
     public static String docx2html(InputStream inputStream) {
+        long startTime = System.currentTimeMillis();
         String htmlResult = "";
         File htmlOutputFile = new File(HTML_PATH + UUID.randomUUID().toString() + Constant.EXT_HTML);
         try (InputStream docxInputStream = inputStream;
              Writer writer = new OutputStreamWriter(FileUtils.openOutputStream(htmlOutputFile), StandardCharsets.UTF_8))
         {
+            long currentTime = System.currentTimeMillis();
             XWPFDocument document = new XWPFDocument(docxInputStream);
+            System.out.println("解析docx耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
             List<XWPFParagraph> paragraphList = document.getParagraphs();
             Map<String, Shape> shapeMap = new HashMap<>();
             for (XWPFParagraph paragraph : paragraphList) {
@@ -64,11 +67,13 @@ public class DocxToHtmlConverter {
             }
 
             XHTMLOptions options = XHTMLOptions.create();
-            options.setImageManager(new ImageManager(new File(IMAGE_PATH), ""));
+            options.setImageManager(new Base64EmbedImgManager());
             options.setFragment(true);
             options.setIgnoreStylesIfUnused(true);
+            currentTime = System.currentTimeMillis();
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, writer, options);
+            System.out.println("docx转html耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
             htmlResult = FileUtils.readFileToString(htmlOutputFile, "UTF-8");
 
             for (File imgFile : imgFileList) {
@@ -76,9 +81,11 @@ public class DocxToHtmlConverter {
                 if(FilenameUtils.isExtension(imgName, Constant.FORMAT_WMF)){
                     File svgFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_SVG);
                     File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
+                    currentTime = System.currentTimeMillis();
                     ImgConverter.convertWmf2Svg(imgFile, svgFile);
                     ImgConverter.convertSvg2Png(svgFile, pngFile);
-                    long currentTime = System.currentTimeMillis();
+                    System.out.println("wmf转png耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
+                    currentTime = System.currentTimeMillis();
                     String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);
                     System.out.println("上传图片耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     svgFile.delete();
@@ -87,7 +94,9 @@ public class DocxToHtmlConverter {
                     String imgRefPlaceholder = XWPFUtils.createRefPlaceholder(shape.getRef());
                     htmlResult = htmlResult.replace(imgRefPlaceholder, createImgTag(imgOssUrl, shape.getStyle()));
                 } else {
+                    currentTime = System.currentTimeMillis();
                     String imgOssUrl = MyFileUtil.uploadFileToOSS(imgFile);
+                    System.out.println("上传图片耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     String imgHtmlUrl = File.separator + imgFile.getName();
                     htmlResult = htmlResult.replace(imgHtmlUrl, imgOssUrl);
                 }
@@ -98,6 +107,7 @@ public class DocxToHtmlConverter {
         } finally {
             htmlOutputFile.delete();
         }
+        System.out.println("总耗时:" + (System.currentTimeMillis() - startTime) + "ms");
         return htmlResult;
     }
 
