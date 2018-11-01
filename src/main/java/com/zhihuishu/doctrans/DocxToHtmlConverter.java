@@ -70,7 +70,6 @@ public class DocxToHtmlConverter {
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, writer, options);
             htmlResult = FileUtils.readFileToString(htmlOutputFile, "UTF-8");
-            htmlOutputFile.delete();
 
             for (File imgFile : imgFileList) {
                 String imgName = imgFile.getName();
@@ -79,7 +78,9 @@ public class DocxToHtmlConverter {
                     File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
                     ImgConverter.convertWmf2Svg(imgFile, svgFile);
                     ImgConverter.convertSvg2Png(svgFile, pngFile);
+                    long currentTime = System.currentTimeMillis();
                     String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);
+                    System.out.println("上传图片耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     svgFile.delete();
                     pngFile.delete();
                     Shape shape = shapeMap.get(imgName);
@@ -94,6 +95,8 @@ public class DocxToHtmlConverter {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            htmlOutputFile.delete();
         }
         return htmlResult;
     }
