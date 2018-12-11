@@ -43,6 +43,7 @@ public class DocxToHtmlConverter {
             Map<String, Shape> shapeMap = new HashMap<>();
             for (XWPFParagraph paragraph : paragraphList) {
                 List<Shape> shapeList = XWPFUtils.extractShapeInParagraph(paragraph);
+                XWPFUtils.extractMathMLInParagraph(paragraph);
                 if(shapeList == null || shapeList.size() == 0){
                     continue;
                 }
@@ -83,7 +84,6 @@ public class DocxToHtmlConverter {
                     File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
                     currentTime = System.currentTimeMillis();
                     ImgConverter.convertWmf2Svg(imgFile, svgFile);
-                    ImgConverter.convertSvg2Png(svgFile, pngFile);
                     System.out.println("wmf转png耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     currentTime = System.currentTimeMillis();
                     String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);

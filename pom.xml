@@ -90,11 +90,24 @@
             <version>2.0.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.sourceforge.jeuclid</groupId>
+            <artifactId>jeuclid-core</artifactId>
+            <version>3.1.9</version>
+        </dependency>
+
+
         <!-- wmf to svg, svg to png -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-all</artifactId>
             <version>1.10</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.arnx</groupId>
