@@ -1,6 +1,9 @@
 package com.zhihuishu.doctrans;
 
 import com.zhihuishu.doctrans.model.Shape;
+import com.zhihuishu.doctrans.support.BatikWmfConverter;
+import com.zhihuishu.doctrans.support.DefaultWmfConverter;
+import com.zhihuishu.doctrans.support.WmfConverter;
 import com.zhihuishu.doctrans.utils.Constant;
 import com.zhihuishu.doctrans.utils.ImgConverter;
 import com.zhihuishu.doctrans.utils.MyFileUtil;
@@ -76,14 +79,16 @@ public class DocxToHtmlConverter {
             xhtmlConverter.convert(document, writer, options);
             System.out.println("docx转html耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
             htmlResult = FileUtils.readFileToString(htmlOutputFile, "UTF-8");
-
+    
+            WmfConverter wmfConverter = new BatikWmfConverter();
             for (File imgFile : imgFileList) {
                 String imgName = imgFile.getName();
                 if(FilenameUtils.isExtension(imgName, Constant.FORMAT_WMF)){
                     File svgFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_SVG);
                     File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
                     currentTime = System.currentTimeMillis();
-                    ImgConverter.convertWmf2Svg(imgFile, svgFile);
+                    wmfConverter.convertToSvg(imgFile, svgFile);
+                    ImgConverter.convertSvg2Png(svgFile, pngFile);
                     System.out.println("wmf转png耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     currentTime = System.currentTimeMillis();
                     String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);

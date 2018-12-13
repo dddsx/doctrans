@@ -170,7 +170,7 @@ public class XWPFUtils {
         Document document = convertStringToDocument(getMathML(xmlObject));
         Converter mathMLConvert = Converter.getInstance();
         LayoutContextImpl localLayoutContextImpl = new LayoutContextImpl(LayoutContextImpl.getDefaultLayoutContext());
-        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 500);
+        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 100);
         OutputStream os = new FileOutputStream("D:\\" + ++mathmlNum + ".png");
         mathMLConvert.convert(document, os, "image/png", localLayoutContextImpl);
         os.close();

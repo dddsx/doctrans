@@ -1,5 +1,8 @@
 package com.zhihuishu.doctrans.utils;
 
+import com.zhihuishu.doctrans.support.BatikWmfConverter;
+import com.zhihuishu.doctrans.support.DefaultWmfConverter;
+import com.zhihuishu.doctrans.support.WmfConverter;
 import org.apache.batik.transcoder.TranscoderException;
 import org.junit.Test;
 
@@ -16,6 +19,13 @@ public class ImgConverterTest {
 
     @Test
     public void testCnovertWmf2Svg(){
-        ImgConverter.convertWmf2Svg(new File("D:\\image3.wmf"), new File("D:\\image3.svg"));
+        WmfConverter wmfConverter = new DefaultWmfConverter();
+        wmfConverter.convertToSvg(new File("D:\\3.wmf"), new File("D:\\3.svg"));
+    }
+    
+    @Test
+    public void testCnovertWmf2Svg2(){
+        WmfConverter wmfConverter = new BatikWmfConverter();
+        wmfConverter.convertToSvg(new File("D:\\3.wmf"), new File("D:\\3.svg"));
     }
 }
