@@ -1,7 +1,10 @@
 package com.zhihuishu.doctrans.utils;
 
+import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.apache.batik.transcoder.*;
+import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.batik.util.SVGConstants;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -22,6 +25,13 @@ public class ImgConverter {
             // svgCode = svgCode.replaceAll(":rect", "rect");
             TranscoderInput input = new TranscoderInput(new StringReader(svgCode));
             TranscoderOutput output = new TranscoderOutput(pngOutput);
+            TranscodingHints hints = new TranscodingHints();
+            hints.put(JPEGTranscoder.KEY_QUALITY, 1f);
+            hints.put(JPEGTranscoder.KEY_WIDTH, 500f);
+            hints.put(JPEGTranscoder.KEY_DOM_IMPLEMENTATION, SVGDOMImplementation.getDOMImplementation());
+            hints.put(JPEGTranscoder.KEY_DOCUMENT_ELEMENT_NAMESPACE_URI, SVGConstants.SVG_NAMESPACE_URI);
+            hints.put(JPEGTranscoder.KEY_DOCUMENT_ELEMENT, SVGConstants.SVG_SVG_TAG);
+            transcoder.setTranscodingHints(hints);
             transcoder.transcode(input, output);
         } catch (Exception e) {
             e.printStackTrace();
