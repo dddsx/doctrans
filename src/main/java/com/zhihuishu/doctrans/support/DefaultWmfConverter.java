@@ -11,10 +11,15 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 
-public class DefaultWmfConverter implements WmfConverter {
+public class DefaultWMFConverter implements WMFConverter {
     
+    /**
+     * 利用wmf2svg包实现wmf转svg
+     * @param source wmf源文件
+     * @param target 输出文件
+     */
     @Override
-    public void convertToSvg(File source, File target) {
+    public void convertToSVG(File source, File target) {
         try (InputStream in = new FileInputStream(source);
              OutputStream out = new FileOutputStream(target)
         ) {

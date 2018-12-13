@@ -14,6 +14,5 @@ public class DocxToPdfConverter {
         XWPFDocument document = new XWPFDocument(new FileInputStream("D:\\用户目录\\下载\\公式.docx"));
         PdfOptions options = PdfOptions.create();
         PdfConverter.getInstance().convert(document, new FileOutputStream("D:\\用户目录\\下载\\1.pdf"), options);
-
     }
 }

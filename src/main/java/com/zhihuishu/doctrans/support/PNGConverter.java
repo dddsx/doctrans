@@ -1,19 +1,24 @@
-package com.zhihuishu.doctrans.utils;
+package com.zhihuishu.doctrans.support;
 
 import org.apache.batik.anim.dom.SVGDOMImplementation;
-import org.apache.batik.transcoder.*;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.util.SVGConstants;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.StringReader;
 
-public class ImgConverter {
-
+public class PNGConverter {
     /**
-     * 利用Apache Batik实现SVG转PNG
-     * @param svgFile SVG文件
+     * 利用Apache Batik实现svg转png
+     * @param svgFile svg源文件
      * @param pngFile 输出文件
      */
     public static void convertSvg2Png(File svgFile, File pngFile) {
@@ -37,17 +42,4 @@ public class ImgConverter {
             e.printStackTrace();
         }
     }
-    
-/*
-    public static void convertWmf2Svg2(File wmfFile, File svgFile) throws FileNotFoundException, TranscoderException {
-        TranscoderInput input = new TranscoderInput(wmfFile.toURI().toString());
-        OutputStream outFile = new FileOutputStream(svgFile);
-        TranscoderOutput output = new TranscoderOutput(outFile);
-        WMFTranscoder transcoder = new WMFTranscoder();
-        TranscodingHints hints = new TranscodingHints();
-        hints.put(WMFTranscoder.SVG_SYMBOL_TAG, "false");
-        transcoder.setTranscodingHints(hints);
-        transcoder.transcode(input, output);
-    }
-    */
 }

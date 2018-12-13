@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.utils;
+package com.zhihuishu.doctrans.support;
 
 public class Constant {
 
