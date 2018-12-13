@@ -23,9 +23,6 @@ public class BatikWMFConverter implements WMFConverter {
             WMFTranscoder transcoder = new WMFTranscoder();
             TranscoderInput input = new TranscoderInput(in);
             TranscoderOutput output = new TranscoderOutput(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-            TranscodingHints hints = new TranscodingHints();
-            //hints.put(WMFTranscoder.TAG, WMFTranscoder.SVG_SYMBOL_TAG);
-            transcoder.setTranscodingHints(hints);
             transcoder.transcode(input, output);
         } catch (Exception e) {
             e.printStackTrace();
