@@ -2,7 +2,6 @@ package com.zhihuishu.doctrans.support;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.wmf.tosvg.WMFTranscoder;
 
 import java.io.*;

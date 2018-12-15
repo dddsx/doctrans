@@ -12,7 +12,7 @@ public class DocxToHtmlConverterTest {
     public void testDocx2html(){
         String result = null;
         try {
-            URL fileUrl = this.getClass().getClassLoader().getResource("word公式.docx");
+            URL fileUrl = this.getClass().getClassLoader().getResource("com/zhihuishu/doctrans/word公式.docx");
             result = DocxToHtmlConverter.docx2html(Objects.requireNonNull(fileUrl).openStream());
         } catch (IOException e) {
             e.printStackTrace();

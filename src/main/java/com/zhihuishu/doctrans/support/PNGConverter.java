@@ -27,9 +27,9 @@ public class PNGConverter {
             // svgCode = svgCode.replaceAll(":rect", "rect");
             TranscoderInput input = new TranscoderInput(new StringReader(svgCode));
             TranscoderOutput output = new TranscoderOutput(pngOutput);
+            transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, 400F);
             transcoder.addTranscodingHint(PNGTranscoder.KEY_BACKGROUND_COLOR, Color.white);
             transcoder.addTranscodingHint(PNGTranscoder.KEY_INDEXED, 1);
-            transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, 400f);
             transcoder.addTranscodingHint(XMLAbstractTranscoder.KEY_DOM_IMPLEMENTATION, SVGDOMImplementation.getDOMImplementation());
             transcoder.addTranscodingHint(XMLAbstractTranscoder.KEY_DOCUMENT_ELEMENT_NAMESPACE_URI, SVGConstants.SVG_NAMESPACE_URI);
             transcoder.addTranscodingHint(XMLAbstractTranscoder.KEY_DOCUMENT_ELEMENT, SVGConstants.SVG_SVG_TAG);

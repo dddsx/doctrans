@@ -100,24 +100,24 @@ public class XWPFUtils {
     }
     
     public static void extractMathMLInParagraph(XWPFParagraph p) {
-//        List<CTOMath> ctoMathList = p.getCTP().getOMathList();
-//        List<CTOMathPara> ctoMathParaList = p.getCTP().getOMathParaList();
-//        for (CTOMath ctoMath : ctoMathList) {
-//            try {
-//               convertOmathToPNG(ctoMath);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        for (CTOMathPara ctoMathPara : ctoMathParaList) {
-//            for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
-//                try {
-//                    convertOmathToPNG(ctoMath);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
+        List<CTOMath> ctoMathList = p.getCTP().getOMathList();
+        List<CTOMathPara> ctoMathParaList = p.getCTP().getOMathParaList();
+        for (CTOMath ctoMath : ctoMathList) {
+            try {
+               // convertOmathToPNG(ctoMath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        for (CTOMathPara ctoMathPara : ctoMathParaList) {
+            for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
+                try {
+                    // convertOmathToPNG(ctoMath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static String createRefPlaceholder(String ref){
