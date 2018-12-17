@@ -27,12 +27,9 @@ public abstract class AbstractDocumentVisitor {
     
     protected ConvertSetting settings;
     
-    protected XWPFStylesDocument stylesDocument;
-    
     public AbstractDocumentVisitor(XWPFDocument document, ConvertSetting settings) {
         this.document = document;
         this.settings = settings;
-        this.stylesDocument = new XWPFStylesDocument(document);
         this.htmlResult = new StringBuilder();
     }
     

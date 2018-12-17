@@ -1,21 +1,28 @@
-package com.zhihuishu.doctrans.support;
+package com.zhihuishu.doctrans.util;
 
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.wmf.tosvg.WMFTranscoder;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class BatikWMFConverter implements WMFConverter {
+public class BatikWMFConverter implements ImgConverter {
+    
+    @Override
+    public void convert(File source, File target, ImgConfig config) {
+        if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_SVG)) {
+            convertToSVG(source, target);
+        }
+    }
     
     /**
      * 利用Apache Batik实现wmf转svg
      * @param source wmf源文件
      * @param target 输出文件
      */
-    @Override
-    public void convertToSVG(File source, File target) {
+    private void convertToSVG(File source, File target) {
         try (InputStream in = new FileInputStream(source);
              OutputStream out = new FileOutputStream(target)
         ) {

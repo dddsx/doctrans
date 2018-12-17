@@ -10,7 +10,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 
-public class MathMLConverterTest {
+import static com.zhihuishu.doctrans.util.ImgConverter.EXT_PNG;
+
+public class MathMLParserTest {
     
     private final static String MATH_PNG = "math";
     
@@ -24,13 +26,13 @@ public class MathMLConverterTest {
             List<CTOMath> maths = p.getCTP().getOMathList();
             List<CTOMathPara> mathParas = p.getCTP().getOMathParaList();
             for (CTOMath ctoMath : maths) {
-                File png = new File(word.getParentFile(), MATH_PNG + num++ + Constant.EXT_PNG);
-                MathMLConverter.convertOmathToPNG(ctoMath, png);
+                File png = new File(word.getParentFile(), MATH_PNG + num++ + EXT_PNG);
+                MathMLParser.convertOmathToPNG(ctoMath, png);
             }
             for (CTOMathPara ctoMathPara : mathParas) {
                 for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
-                    File png = new File(word.getParentFile(), MATH_PNG + num++ + Constant.EXT_PNG);
-                    MathMLConverter.convertOmathToPNG(ctoMath, png);
+                    File png = new File(word.getParentFile(), MATH_PNG + num++ + EXT_PNG);
+                    MathMLParser.convertOmathToPNG(ctoMath, png);
                 }
             }
         }

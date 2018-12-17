@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.utils;
+package com.zhihuishu.doctrans.util;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class MyFileUtil {
+public class FileUploader {
 
     public static File downloadFile(String urlPath, String downloadDir) {
         File file = null;

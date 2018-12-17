@@ -1,10 +1,14 @@
-package com.zhihuishu.doctrans.support;
+package com.zhihuishu.doctrans.util;
 
 import org.apache.batik.dom.svg.SVGDOMImplementation;
-import org.apache.batik.transcoder.*;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.XMLAbstractTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.util.SVGConstants;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
 import java.io.File;
@@ -12,13 +16,21 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 
-public class PNGConverter {
+public class SVGConverter implements ImgConverter {
+    
+    @Override
+    public void convert(File source, File target, ImgConfig config) {
+        if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_PNG)) {
+            convertToPng(source, target);
+        }
+    }
+    
     /**
      * 利用Apache Batik实现svg转png
      * @param svgFile svg源文件
      * @param pngFile 输出文件
      */
-    public static void convertSvg2Png(File svgFile, File pngFile) {
+    private void convertToPng(File svgFile, File pngFile) {
         try(FileInputStream svgInput = new FileInputStream(svgFile);
             FileOutputStream pngOutput = new FileOutputStream(pngFile)
         ) {

@@ -1,7 +1,8 @@
-package com.zhihuishu.doctrans.support;
+package com.zhihuishu.doctrans.util;
 
 import net.arnx.wmf2svg.gdi.svg.SvgGdi;
 import net.arnx.wmf2svg.gdi.wmf.WmfParser;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.OutputKeys;
@@ -11,15 +12,21 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 
-public class DefaultWMFConverter implements WMFConverter {
+public class DefaultWMFConverter implements ImgConverter {
+    
+    @Override
+    public void convert(File source, File target, ImgConfig config) {
+        if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_SVG)) {
+            convertToSVG(source, target);
+        }
+    }
     
     /**
      * 利用wmf2svg包实现wmf转svg
      * @param source wmf源文件
      * @param target 输出文件
      */
-    @Override
-    public void convertToSVG(File source, File target) {
+    private void convertToSVG(File source, File target) {
         try (InputStream in = new FileInputStream(source);
              OutputStream out = new FileOutputStream(target)
         ) {

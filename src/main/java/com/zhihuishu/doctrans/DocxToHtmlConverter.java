@@ -1,12 +1,9 @@
 package com.zhihuishu.doctrans;
 
 import com.zhihuishu.doctrans.model.Shape;
-import com.zhihuishu.doctrans.support.BatikWMFConverter;
-import com.zhihuishu.doctrans.support.PNGConverter;
-import com.zhihuishu.doctrans.support.WMFConverter;
+import com.zhihuishu.doctrans.support.XWPFUtils;
+import com.zhihuishu.doctrans.util.*;
 import com.zhihuishu.doctrans.support.Constant;
-import com.zhihuishu.doctrans.utils.MyFileUtil;
-import com.zhihuishu.doctrans.utils.XWPFUtils;
 import fr.opensagres.poi.xwpf.converter.xhtml.Base64EmbedImgManager;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
@@ -20,8 +17,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class DocxToHtmlConverter {
+import static com.zhihuishu.doctrans.util.ImgConverter.*;
 
+public class DocxToHtmlConverter {
+    
     private static final String HTML_PATH = "/data/html/";
 
     private static final String IMAGE_PATH = "/data/image/word/media/";
@@ -79,18 +78,19 @@ public class DocxToHtmlConverter {
             System.out.println("docx转html耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
             htmlResult = FileUtils.readFileToString(htmlOutputFile, "UTF-8");
     
-            WMFConverter wmfConverter = new BatikWMFConverter();
+            ImgConverter wmfConverter = new BatikWMFConverter();
+            ImgConverter svgConverter = new SVGConverter();
             for (File imgFile : imgFileList) {
                 String imgName = imgFile.getName();
-                if(FilenameUtils.isExtension(imgName, Constant.FORMAT_WMF)){
-                    File svgFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_SVG);
-                    File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + Constant.EXT_PNG);
+                if(FilenameUtils.isExtension(imgName, FORMAT_WMF)){
+                    File svgFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + EXT_SVG);
+                    File pngFile = new File(IMAGE_PATH, FilenameUtils.getBaseName(imgName) + EXT_PNG);
                     currentTime = System.currentTimeMillis();
-                    wmfConverter.convertToSVG(imgFile, svgFile);
-                    PNGConverter.convertSvg2Png(svgFile, pngFile);
+                    wmfConverter.convert(imgFile, svgFile, new ImgConfig(FORMAT_SVG));
+                    svgConverter.convert(svgFile, pngFile, new ImgConfig(FORMAT_PNG));
                     System.out.println("wmf转png耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     currentTime = System.currentTimeMillis();
-                    String imgOssUrl = MyFileUtil.uploadFileToOSS(pngFile);
+                    String imgOssUrl = FileUploader.uploadFileToOSS(pngFile);
                     System.out.println("上传图片耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     svgFile.delete();
                     pngFile.delete();
@@ -99,7 +99,7 @@ public class DocxToHtmlConverter {
                     htmlResult = htmlResult.replace(imgRefPlaceholder, createImgTag(imgOssUrl, shape.getStyle()));
                 } else {
                     currentTime = System.currentTimeMillis();
-                    String imgOssUrl = MyFileUtil.uploadFileToOSS(imgFile);
+                    String imgOssUrl = FileUploader.uploadFileToOSS(imgFile);
                     System.out.println("上传图片耗时:" + (System.currentTimeMillis() - currentTime) + "ms");
                     String imgHtmlUrl = File.separator + imgFile.getName();
                     htmlResult = htmlResult.replace(imgHtmlUrl, imgOssUrl);

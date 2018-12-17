@@ -1,6 +1,5 @@
 package com.zhihuishu.doctrans.support;
 
-import com.zhihuishu.doctrans.utils.XWPFUtils;
 import net.sourceforge.jeuclid.context.LayoutContextImpl;
 import net.sourceforge.jeuclid.context.Parameter;
 import net.sourceforge.jeuclid.converter.Converter;
@@ -18,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 
-public class MathMLConverter {
+public class MathMLParser {
     
     private final static String OMML2MML_FILE = "OMML2MML.XSL";
     
@@ -33,7 +32,7 @@ public class MathMLConverter {
     }
     
     private static String getMathML(XmlObject xmlObject) throws Exception {
-        StreamSource stylesource = new StreamSource(MathMLConverter.class.getResourceAsStream(OMML2MML_FILE));
+        StreamSource stylesource = new StreamSource(MathMLParser.class.getResourceAsStream(OMML2MML_FILE));
         Transformer transformer = TransformerFactory.newInstance().newTransformer(stylesource);
         Node node = xmlObject.getDomNode();
         
