@@ -1,6 +1,5 @@
 package com.zhihuishu.doctrans.converter;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -12,8 +11,8 @@ public class CustomizedPoiConverterTest {
     public void testConvert(){
         try {
             URL fileUrl = this.getClass().getClassLoader().getResource("com/zhihuishu/doctrans/word公式.docx");
-            Converter converter = new CustomizedPoiConverter();
-            converter.convert(new XWPFDocument(fileUrl.openStream()), null, null);
+            DocxConverter converter = new CustomizedPoiConverter();
+            converter.convert(fileUrl.openStream(),  null);
         } catch (IOException e) {
             e.printStackTrace();
         }

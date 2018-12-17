@@ -1,9 +1,14 @@
 package com.zhihuishu.doctrans.support;
 
+import com.zhihuishu.doctrans.model.MathMLData;
 import net.sourceforge.jeuclid.context.LayoutContextImpl;
 import net.sourceforge.jeuclid.context.Parameter;
 import net.sourceforge.jeuclid.converter.Converter;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.xmlbeans.XmlObject;
+import org.openxmlformats.schemas.officeDocument.x2006.math.CTOMath;
+import org.openxmlformats.schemas.officeDocument.x2006.math.CTOMathPara;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -16,10 +21,40 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.util.List;
 
 public class MathMLParser {
     
     private final static String OMML2MML_FILE = "OMML2MML.XSL";
+    
+    public static void extractMathML(XWPFDocument document, List<MathMLData> wmfDatas) {
+        List<XWPFParagraph> paragraphs = document.getParagraphs();
+        for (XWPFParagraph paragraph : paragraphs) {
+            extractMathMLInParagraph(paragraph, wmfDatas);
+        }
+        
+    }
+    
+    public static void extractMathMLInParagraph(XWPFParagraph paragraph, List<MathMLData> wmfDatas) {
+        List<CTOMath> ctoMathList = paragraph.getCTP().getOMathList();
+        List<CTOMathPara> ctoMathParaList = paragraph.getCTP().getOMathParaList();
+        for (CTOMath ctoMath : ctoMathList) {
+            try {
+                // convertOmathToPNG(ctoMath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        for (CTOMathPara ctoMathPara : ctoMathParaList) {
+            for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
+                try {
+                    // convertOmathToPNG(ctoMath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
     
     public static void convertOmathToPNG(XmlObject xmlObject, File pngOutput) throws Exception {
         Document document = convertStringToDocument(getMathML(xmlObject));
