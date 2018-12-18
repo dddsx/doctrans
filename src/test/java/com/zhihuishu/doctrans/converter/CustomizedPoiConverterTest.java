@@ -11,8 +11,8 @@ public class CustomizedPoiConverterTest {
     public void testConvert(){
         try {
             URL fileUrl = this.getClass().getClassLoader().getResource("com/zhihuishu/doctrans/word公式.docx");
-            DocxConverter converter = new CustomizedPoiConverter();
-            converter.convert(fileUrl.openStream(),  null);
+            DocxConverter converter = new CustomizedPoiConverter(fileUrl.openStream());
+            converter.convert(null);
         } catch (IOException e) {
             e.printStackTrace();
         }

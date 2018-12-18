@@ -2,7 +2,8 @@ package com.zhihuishu.doctrans.converter.support;
 
 import fr.opensagres.poi.xwpf.converter.core.utils.StringUtils;
 import fr.opensagres.poi.xwpf.converter.xhtml.internal.utils.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -17,7 +18,7 @@ import java.util.List;
 
 public abstract class AbstractDocumentVisitor {
     
-    private static final Logger log = Logger.getLogger(AbstractDocumentVisitor.class);
+    protected final Log logger = LogFactory.getLog(AbstractDocumentVisitor.class);
     
     private static final String WORD_MEDIA_PATH = "word/media/";
     

@@ -1,7 +1,5 @@
 package com.zhihuishu.doctrans.support;
 
-import fr.opensagres.poi.xwpf.converter.core.utils.StringUtils;
-
 public class PlaceholderHelper {
     
     private static final String WMF_PLACEHOLDER_PREFIX = "${wmf:";
@@ -10,19 +8,19 @@ public class PlaceholderHelper {
     
     private static final String COMMON_PLACEHOLDER_SUFFIX = "}";
     
-    public static String createWMFPlaceholder(String id) {
-        return createPlaceholder(WMF_PLACEHOLDER_PREFIX, COMMON_PLACEHOLDER_SUFFIX, id);
+    public static String createWMFPlaceholder(String rId) {
+        return createPlaceholder(WMF_PLACEHOLDER_PREFIX, COMMON_PLACEHOLDER_SUFFIX, rId);
     }
     
-    public static String createMathMLPlaceholder(String id) {
-        return createPlaceholder(MATHML_PLACEHOLDER_PREFIX, COMMON_PLACEHOLDER_SUFFIX, id);
+    public static String createMathMLPlaceholder(Integer num) {
+        return createPlaceholder(MATHML_PLACEHOLDER_PREFIX, COMMON_PLACEHOLDER_SUFFIX, num);
     }
     
-    private static String createPlaceholder(String prefix, String suffix, String str) {
-        if (prefix == null || suffix == null || StringUtils.isEmpty(str)) {
+    private static String createPlaceholder(String prefix, String suffix, Object obj) {
+        if (prefix == null || suffix == null || obj == null) {
             throw new IllegalArgumentException("非法占位符参数");
         }
-        return prefix + str + suffix;
+        return prefix + String.valueOf(obj) + suffix;
     }
     
 }

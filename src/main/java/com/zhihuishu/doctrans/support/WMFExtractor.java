@@ -13,20 +13,23 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDrawing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class WMFParser {
+public class WMFExtractor {
     
-    public static void extractWMF(XWPFDocument document, List<WMFData> wmfDatas) {
+    private List<WMFData> wmfDatas = new ArrayList<>();
+    
+    public List<WMFData> extractWMF(XWPFDocument document) {
         List<XWPFParagraph> paragraphs = document.getParagraphs();
         for (XWPFParagraph paragraph : paragraphs) {
             List<XWPFRun> runs = paragraph.getRuns();
-            extractWMFInRuns(document, wmfDatas, runs);
+            extractWMFInRuns(document, runs);
         }
-        
+        return wmfDatas;
     }
     
-    private static void extractWMFInRuns(XWPFDocument document, List<WMFData> wmfDatas, List<XWPFRun> runs) {
+    private void extractWMFInRuns(XWPFDocument document, List<XWPFRun> runs) {
         for (XWPFRun run : runs) {
             CTR ctr = run.getCTR();
             XmlCursor c = ctr.newCursor();
@@ -34,23 +37,7 @@ public class WMFParser {
             while (c.toNextSelection()) {
                 XmlObject o = c.getObject();
                 if (o instanceof CTDrawing) {
-                    /* CTDrawing drawing = (CTDrawing) o;
-                    CTInline[] ctInlines = drawing.getInlineArray();
-                    for (CTInline ctInline : ctInlines) {
-                        CTGraphicalObject graphic = ctInline.getGraphic();
-                        //
-                        XmlCursor cursor = graphic.getGraphicData().newCursor();
-                        cursor.selectPath("./*");
-                        while (cursor.toNextSelection()) {
-                            XmlObject xmlObject = cursor.getObject();
-                            // 如果子元素是<pic:pic>这样的形式
-                            if (xmlObject instanceof CTPicture) {
-                                org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture picture = (org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture) xmlObject;
-                                //拿到元素的属性
-                              S  imageBundleList.add(picture.getBlipFill().getBlip().getEmbed());
-                            }
-                        }
-                    }*/
+                    // 普通图片，不做处理
                 } else if (o instanceof CTObject) {
                     CTObject object = (CTObject) o;
                     XmlCursor w = object.newCursor();
@@ -58,6 +45,7 @@ public class WMFParser {
                     while (w.toNextSelection()) {
                         XmlObject xmlObject = w.getObject();
                         if (xmlObject instanceof CTShape) {
+                            // 如果是wmf格式图片
                             CTShape shape = (CTShape) xmlObject;
                             CTImageData imageData = shape.getImagedataArray(0);
                             String rId = imageData.getId2();
@@ -71,7 +59,8 @@ public class WMFParser {
         }
     }
     
-    private static void createWMFPlaceholder(XWPFRun run, String rId) {
+    private void createWMFPlaceholder(XWPFRun run, String rId) {
+        CTR ctr = run.getCTR();
         run.setText(PlaceholderHelper.createWMFPlaceholder(rId));
     }
 }

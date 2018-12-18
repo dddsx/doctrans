@@ -2,24 +2,27 @@ package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.converter.support.XWPFDocumentVisitor;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
+import java.io.IOException;
 import java.io.InputStream;
 
-public class CustomizedPoiConverter implements DocxConverter {
+public class CustomizedPoiConverter extends AbstractDocxConverter {
     
-    private final static Logger log = Logger.getLogger(CustomizedPoiConverter.class);
+    protected final Log logger = LogFactory.getLog(CustomizedPoiConverter.class);
+    
+    public CustomizedPoiConverter(InputStream inputStream) throws IOException {
+        super(inputStream);
+    }
+    
+    public CustomizedPoiConverter(XWPFDocument document) {
+        super(document);
+    }
     
     @Override
-    public String convert(InputStream docxInput, ConvertSetting settings) {
-        XWPFDocument document;
-        try {
-            document = new XWPFDocument(docxInput);
-        } catch (Exception e) {
-            log.error("docx文档转换错误", e);
-            return "";
-        }
+    public String convert(ConvertSetting settings) {
         XWPFDocumentVisitor visitor = new XWPFDocumentVisitor(document, settings);
         visitor.visit();
         return visitor.getResult();

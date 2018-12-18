@@ -6,6 +6,11 @@ public class MathMLData {
     
     private String xmlContent;
     
+    public MathMLData(String id, String xmlContent) {
+        this.id = id;
+        this.xmlContent = xmlContent;
+    }
+    
     public String getId() {
         return id;
     }

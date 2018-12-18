@@ -90,6 +90,7 @@
             <version>2.0.1</version>
         </dependency>
 
+        <!-- mathML转png -->
         <dependency>
             <groupId>net.sourceforge.jeuclid</groupId>
             <artifactId>jeuclid-core</artifactId>

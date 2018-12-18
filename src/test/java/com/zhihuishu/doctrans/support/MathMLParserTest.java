@@ -27,12 +27,12 @@ public class MathMLParserTest {
             List<CTOMathPara> mathParas = p.getCTP().getOMathParaList();
             for (CTOMath ctoMath : maths) {
                 File png = new File(word.getParentFile(), MATH_PNG + num++ + EXT_PNG);
-                MathMLParser.convertOmathToPNG(ctoMath, png);
+                //MathMLExtractor.convertOmathToPNG(ctoMath, png);
             }
             for (CTOMathPara ctoMathPara : mathParas) {
                 for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
                     File png = new File(word.getParentFile(), MATH_PNG + num++ + EXT_PNG);
-                    MathMLParser.convertOmathToPNG(ctoMath, png);
+                    //MathMLExtractor.convertOmathToPNG(ctoMath, png);
                 }
             }
         }
