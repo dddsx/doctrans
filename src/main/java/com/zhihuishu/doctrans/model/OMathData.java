@@ -1,14 +1,19 @@
 package com.zhihuishu.doctrans.model;
 
-public class MathMLData {
+import org.w3c.dom.Node;
+
+public class OMathData {
     
     private String id;
     
     private String xmlContent;
     
-    public MathMLData(String id, String xmlContent) {
+    private Node node;
+    
+    public OMathData(String id, String xmlContent, Node node) {
         this.id = id;
         this.xmlContent = xmlContent;
+        this.node = node;
     }
     
     public String getId() {
@@ -25,5 +30,13 @@ public class MathMLData {
     
     public void setXmlContent(String xmlContent) {
         this.xmlContent = xmlContent;
+    }
+    
+    public Node getNode() {
+        return node;
+    }
+    
+    public void setNode(Node node) {
+        this.node = node;
     }
 }

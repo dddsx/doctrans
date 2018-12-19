@@ -16,7 +16,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WMFExtractor {
+public class WMFImgHandler {
     
     private List<WMFData> wmfDatas = new ArrayList<>();
     

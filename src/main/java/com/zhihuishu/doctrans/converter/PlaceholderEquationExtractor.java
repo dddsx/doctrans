@@ -1,9 +1,9 @@
 package com.zhihuishu.doctrans.converter;
 
-import com.zhihuishu.doctrans.model.MathMLData;
+import com.zhihuishu.doctrans.model.OMathData;
 import com.zhihuishu.doctrans.model.WMFData;
-import com.zhihuishu.doctrans.support.MathMLExtractor;
-import com.zhihuishu.doctrans.support.WMFExtractor;
+import com.zhihuishu.doctrans.support.MathMLHandler;
+import com.zhihuishu.doctrans.support.WMFImgHandler;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.util.List;
@@ -13,12 +13,12 @@ import java.util.List;
  */
 public class PlaceholderEquationExtractor implements EquationExtractor {
     
-    private MathMLExtractor mathMLParser = new MathMLExtractor();
+    private MathMLHandler mathMLParser = new MathMLHandler();
     
-    private WMFExtractor wmfParser = new WMFExtractor();
+    private WMFImgHandler wmfParser = new WMFImgHandler();
     
     @Override
-    public List<MathMLData> extractWMF(XWPFDocument document) {
+    public List<OMathData> extractWMF(XWPFDocument document) {
         return mathMLParser.extractMathML(document);
     }
     

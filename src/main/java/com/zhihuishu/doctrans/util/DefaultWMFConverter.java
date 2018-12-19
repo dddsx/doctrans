@@ -10,41 +10,36 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class DefaultWMFConverter implements ImgConverter {
     
     @Override
-    public void convert(File source, File target, ImgConfig config) {
+    public void convert(InputStream in, OutputStream out, ImgConfig config) throws Exception {
         if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_SVG)) {
-            convertToSVG(source, target);
+            convertToSVG(in, out);
         }
     }
     
     /**
      * 利用wmf2svg包实现wmf转svg
-     * @param source wmf源文件
-     * @param target 输出文件
+     * @param in
+     * @param out
      */
-    private void convertToSVG(File source, File target) {
-        try (InputStream in = new FileInputStream(source);
-             OutputStream out = new FileOutputStream(target)
-        ) {
-            WmfParser parser = new WmfParser();
-            final SvgGdi gdi = new SvgGdi(false);
-            gdi.setReplaceSymbolFont(true);
-            parser.parse(in, gdi);
-            Document doc = gdi.getDocument();
-            // if (svgFile.getName().endsWith(".svgz")) {
-            //     out = new GZIPOutputStream(out);
-            // }
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-            //transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "yes");
-            transformer.transform(new DOMSource(doc), new StreamResult(out));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void convertToSVG(InputStream in, OutputStream out) throws Exception {
+        WmfParser parser = new WmfParser();
+        final SvgGdi gdi = new SvgGdi(false);
+        gdi.setReplaceSymbolFont(true);
+        parser.parse(in, gdi);
+        Document doc = gdi.getDocument();
+        // if (svgFile.getName().endsWith(".svgz")) {
+        //     out = new GZIPOutputStream(out);
+        // }
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+        //transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "yes");
+        transformer.transform(new DOMSource(doc), new StreamResult(out));
     }
 }

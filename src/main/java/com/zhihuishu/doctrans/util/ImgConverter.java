@@ -2,7 +2,8 @@ package com.zhihuishu.doctrans.util;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public interface ImgConverter {
     
@@ -17,13 +18,13 @@ public interface ImgConverter {
     String FORMAT_SVG = "svg";
     
     String FORMAT_PNG = "png";
-
+    
     /**
      * 将图片转换为其它格式
-     * @param source 源文件
-     * @param target 输出文件
+     * @param in 源图片流
+     * @param out 输出流
      */
-    void convert(File source, File target, ImgConfig config);
+    void convert(InputStream in, OutputStream out, ImgConfig config) throws Exception;
     
     static boolean isWMFFormat(String filename) {
         return StringUtils.endsWithIgnoreCase(filename, FORMAT_WMF);

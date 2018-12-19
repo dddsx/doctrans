@@ -4,7 +4,8 @@ import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
 
 public class FileUploader {
 
