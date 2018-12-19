@@ -1,21 +1,21 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.model.OMathData;
-import com.zhihuishu.doctrans.model.WMFData;
+import com.zhihuishu.doctrans.model.WmfData;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
-import java.util.List;
+import java.util.Map;
 
 public interface EquationExtractor {
     
     /**
      * 提取wmf矢量图格式的公式
      */
-    List<OMathData> extractWMF(XWPFDocument document);
+    Map<String, OMathData> extractWMF(XWPFDocument document);
     
     /**
      * 提取用omath表示的公式
      */
-    List<WMFData> extractMathML(XWPFDocument document);
+    Map<String, WmfData> extractMathML(XWPFDocument document);
     
 }

@@ -4,24 +4,24 @@ import org.w3c.dom.Node;
 
 public class OMathData {
     
-    private String id;
+    private String placeholder;
     
     private String xmlContent;
     
     private Node node;
     
-    public OMathData(String id, String xmlContent, Node node) {
-        this.id = id;
+    public OMathData(String placeholder, String xmlContent, Node node) {
+        this.placeholder = placeholder;
         this.xmlContent = xmlContent;
         this.node = node;
     }
     
-    public String getId() {
-        return id;
+    public String getPlaceholder() {
+        return placeholder;
     }
     
-    public void setId(String id) {
-        this.id = id;
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
     }
     
     public String getXmlContent() {

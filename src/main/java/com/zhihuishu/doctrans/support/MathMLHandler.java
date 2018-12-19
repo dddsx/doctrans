@@ -11,17 +11,18 @@ import org.openxmlformats.schemas.officeDocument.x2006.math.CTOMathPara;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MathMLHandler {
     
     /** 用于生成mathML占位符, 在一个document中标识唯一的mathML */
     private int mathNum = 1;
     
-    private List<OMathData> wmfDatas = new ArrayList<>();
+    private Map<String, OMathData> wmfDatas = new HashMap<>();
     
-    public List<OMathData> extractMathML(XWPFDocument document) {
+    public Map<String, OMathData> extractMathML(XWPFDocument document) {
         List<XWPFParagraph> paragraphs = document.getParagraphs();
         for (XWPFParagraph paragraph : paragraphs) {
             extractMathMLInParagraph(paragraph);
@@ -54,11 +55,12 @@ public class MathMLHandler {
      * 处理"<m:oMath>...</>"
      */
     private void handleCTOMath(CTOMath ctoMath, XWPFParagraph paragraph, int runIndex) {
-        OMathData mathMLData = new OMathData(String.valueOf(mathNum), ctoMath.xmlText(), ctoMath.getDomNode());
-        wmfDatas.add(mathMLData);
+        String placeholder = PlaceholderHelper.createMathMLPlaceholder(mathNum++);
+        OMathData mathMLData = new OMathData(placeholder, ctoMath.xmlText(), ctoMath.getDomNode());
+        wmfDatas.put(placeholder, mathMLData);
         // 将"<m:oMath>...</>"删除
         ctoMath.newCursor().removeXml();
-        this.setPlaceholder(paragraph, runIndex);
+        this.setPlaceholder(paragraph, runIndex, placeholder);
     }
     
     /**
@@ -66,18 +68,19 @@ public class MathMLHandler {
      */
     private void handleCTOMathPara(CTOMathPara ctoMathPara, XWPFParagraph paragraph, int runIndex) {
         for (CTOMath ctoMath : ctoMathPara.getOMathList()) {
-            OMathData mathMLData = new OMathData(String.valueOf(mathNum), ctoMath.xmlText(), ctoMath.getDomNode());
-            wmfDatas.add(mathMLData);
-            this.setPlaceholder(paragraph, runIndex);
+            String placeholder = PlaceholderHelper.createMathMLPlaceholder(mathNum++);
+            OMathData mathMLData = new OMathData(placeholder, ctoMath.xmlText(), ctoMath.getDomNode());
+            wmfDatas.put(placeholder, mathMLData);
+            this.setPlaceholder(paragraph, runIndex, placeholder);
         }
         // 将"<m:oMathPara>...</>"整段删除
         ctoMathPara.newCursor().removeXml();
     }
     
     
-    private void setPlaceholder(XWPFParagraph paragraph, int runIndex) {
+    private void setPlaceholder(XWPFParagraph paragraph, int runIndex, String placeholder) {
         XWPFRun run = paragraph.insertNewRun(runIndex);
-        run.setText(PlaceholderHelper.createMathMLPlaceholder(mathNum++));
+        run.setText(placeholder);
     }
     
 }

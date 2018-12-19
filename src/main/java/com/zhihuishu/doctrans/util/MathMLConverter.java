@@ -4,7 +4,6 @@ import com.zhihuishu.doctrans.support.MathMLHandler;
 import net.sourceforge.jeuclid.context.LayoutContextImpl;
 import net.sourceforge.jeuclid.context.Parameter;
 import net.sourceforge.jeuclid.converter.Converter;
-import org.openxmlformats.schemas.officeDocument.x2006.math.CTOMath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -28,7 +27,7 @@ public class MathMLConverter {
         Document document = convertStringToDocument(getMathML(node));
         Converter mathMLConvert = Converter.getInstance();
         LayoutContextImpl localLayoutContextImpl = new LayoutContextImpl(LayoutContextImpl.getDefaultLayoutContext());
-        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 100);
+        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 25);
         mathMLConvert.convert(document, outputStream, "image/png", localLayoutContextImpl);
     }
     

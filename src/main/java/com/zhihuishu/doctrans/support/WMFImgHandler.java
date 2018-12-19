@@ -2,7 +2,7 @@ package com.zhihuishu.doctrans.support;
 
 import com.microsoft.schemas.vml.CTImageData;
 import com.microsoft.schemas.vml.CTShape;
-import com.zhihuishu.doctrans.model.WMFData;
+import com.zhihuishu.doctrans.model.WmfData;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
@@ -13,14 +13,15 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDrawing;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WMFImgHandler {
     
-    private List<WMFData> wmfDatas = new ArrayList<>();
+    private Map<String, WmfData> wmfDatas = new HashMap<>();
     
-    public List<WMFData> extractWMF(XWPFDocument document) {
+    public Map<String, WmfData> extractWMF(XWPFDocument document) {
         List<XWPFParagraph> paragraphs = document.getParagraphs();
         for (XWPFParagraph paragraph : paragraphs) {
             List<XWPFRun> runs = paragraph.getRuns();
@@ -49,9 +50,11 @@ public class WMFImgHandler {
                             CTShape shape = (CTShape) xmlObject;
                             CTImageData imageData = shape.getImagedataArray(0);
                             String rId = imageData.getId2();
+                            String placeholder = PlaceholderHelper.createWMFPlaceholder(rId);
                             XWPFPictureData pictureData = document.getPictureDataByID(rId);
-                            wmfDatas.add(new WMFData(rId, pictureData.getData(), shape.getStyle()));
-                            createWMFPlaceholder(run, rId);
+                            wmfDatas.put(placeholder, new WmfData(
+                                    placeholder, pictureData.getData(), shape.getStyle()));
+                            createWMFPlaceholder(run, placeholder);
                         }
                     }
                 }
@@ -59,8 +62,7 @@ public class WMFImgHandler {
         }
     }
     
-    private void createWMFPlaceholder(XWPFRun run, String rId) {
-        CTR ctr = run.getCTR();
-        run.setText(PlaceholderHelper.createWMFPlaceholder(rId));
+    private void createWMFPlaceholder(XWPFRun run, String placeholder) {
+        run.setText(placeholder);
     }
 }
