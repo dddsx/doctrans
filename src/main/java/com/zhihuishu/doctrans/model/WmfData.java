@@ -1,33 +1,33 @@
 package com.zhihuishu.doctrans.model;
 
-public class WmfData {
+public class WMFData {
     
-    private String placeholder;
+    private String rId;
     
-    private byte[] bytes;
+    private byte[] data;
     
     private String style;
     
-    public WmfData(String placeholder, byte[] bytes, String style) {
-        this.placeholder = placeholder;
-        this.bytes = bytes;
+    public WMFData(String rId, byte[] data, String style) {
+        this.rId = rId;
+        this.data = data;
         this.style = style;
     }
     
-    public String getPlaceholder() {
-        return placeholder;
+    public String getrId() {
+        return rId;
     }
     
-    public void setPlaceholder(String placeholder) {
-        this.placeholder = placeholder;
+    public void setrId(String rId) {
+        this.rId = rId;
     }
     
-    public byte[] getBytes() {
-        return bytes;
+    public byte[] getData() {
+        return data;
     }
     
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
+    public void setData(byte[] data) {
+        this.data = data;
     }
     
     public String getStyle() {
