@@ -15,7 +15,6 @@ import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,9 +98,9 @@ public class XdocreportConverter extends AbstractDocxConverter {
             // 将图片上传到OSS
             Instant uploadImgTime = Instant.now();
             logger.info("将" + imageNum + "张图片上传到OSS服务器");
-            Map<String, String> imageUrls = uploadImageToOSS(imageBytes, null);
-            Map<String, String> wmfImageUrls = uploadImageToOSS(imageBytesOfWMF, FORMAT_PNG);
-            Map<String, String> oMathImageUrls = uploadImageToOSS(imageBytesOfOMath, FORMAT_PNG);
+            Map<String, String> imageUrls = FileUploader.uploadImageToOSS(imageBytes, null, true);
+            Map<String, String> wmfImageUrls = FileUploader.uploadImageToOSS(imageBytesOfWMF, FORMAT_PNG, true);
+            Map<String, String> oMathImageUrls = FileUploader.uploadImageToOSS(imageBytesOfOMath, FORMAT_PNG,true);
             long uploadImgUseTime = Duration.between(uploadImgTime, Instant.now()).toMillis();
             logger.info("上传图片耗时:" + uploadImgUseTime + "毫秒");
             
@@ -118,45 +117,6 @@ public class XdocreportConverter extends AbstractDocxConverter {
         long convertUseTime = Duration.between(convertTime, Instant.now()).toMillis();
         logger.info("文档转换总耗时:" + convertUseTime + "毫秒");
         return html;
-    }
-    
-    /**
-     * 使用多线程方式上传图片到OSS服务器
-     * @param imageBytes 文件名 map to 文件数据
-     * @param format 图片格式
-     * @return 文件名 map to URL
-     */
-    private Map<String, String> uploadImageToOSS(Map<String, byte[]> imageBytes, @Nullable String format) {
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        List<Future<Map<String, String>>> futures = new ArrayList<>();
-        for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
-            futures.add(executorService.submit(() -> {
-                String key = entry.getKey();
-                byte[] bytes = entry.getValue();
-                
-                String uploadFormt = format;
-                if (format == null && key.contains(SYMBOL_BOT)) {
-                    uploadFormt = key.substring(key.lastIndexOf(SYMBOL_BOT));
-                }
-                
-                // 将图片上传到OSS服务器, 并获得URL
-                String url = FileUploader.uploadFileToOSS(new ByteArrayInputStream(bytes),
-                        UUIDUtils.filenameUUID() + SYMBOL_BOT + uploadFormt);
-                return Collections.singletonMap(key, url);
-            }));
-        }
-        executorService.shutdown();
-    
-        Map<String, String> imageUrls = new HashMap<>();
-        for (Future<Map<String, String>> future : futures) {
-            try {
-                Map<String, String> singleMap = future.get();
-                imageUrls.putAll(singleMap);
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-        return imageUrls;
     }
     
     private String replaceImgUrl(Map<String, String> imageUrls, String orginHtml) {

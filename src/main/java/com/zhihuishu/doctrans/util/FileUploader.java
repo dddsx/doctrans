@@ -2,43 +2,116 @@ package com.zhihuishu.doctrans.util;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
+import com.zhihuishu.doctrans.converter.AbstractDocxConverter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.*;
+
+import static com.zhihuishu.doctrans.util.ImgConverter.SYMBOL_BOT;
 
 public class FileUploader {
+    
+    private final static Log logger = LogFactory.getLog(FileUploader.class);
+    
+    private final static String SUCCESS_CODE = "0";
+    
+    /**
+     * 使用多线程方式上传图片到OSS服务器
+     * @param imageBytes 图片标识 map to 图片数据
+     * @param format 图片格式
+     * @param concurrentMode 是否多线程上传
+     * @return 文件名 map to URL
+     */
+    public static Map<String, String> uploadImageToOSS(Map<String, byte[]> imageBytes, String format,
+                                                       boolean concurrentMode) {
+        Map<String, String> imageUrls = new HashMap<>();
+        
+        if (concurrentMode) {
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            List<Future<Map<String, String>>> futures = new ArrayList<>();
+            boolean hasShutdown = false;
+            
+            // 开启上传任务
+            for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
+                futures.add(executorService.submit(() -> {
+                    String imageName = entry.getKey();
+                    byte[] bytes = entry.getValue();
+                    // 将图片上传到OSS服务器, 并获得URL
+                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getUploadFilename(imageName, format));
+                    return Collections.singletonMap(imageName, url);
+                }));
+            }
+            
+            // 阻塞获取结果
+            for (Future<Map<String, String>> future : futures) {
+                try {
+                    Map<String, String> singleMap = future.get();
+                    imageUrls.putAll(singleMap);
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error("http请求异常", e);
+                    executorService.shutdownNow();
+                    hasShutdown = true;
+                    break;
+                }
+            }
+            
+            if (!hasShutdown) {
+                executorService.shutdown();
+            }
+            
+        } else {
+            for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
+                String imageName = entry.getKey();
+                byte[] bytes = entry.getValue();
+                try {
+                    // 将图片上传到OSS服务器, 并获得URL
+                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getUploadFilename(imageName, format));
+                    imageUrls.put(entry.getKey(), url);
+                } catch (Exception e) {
+                    logger.error("http请求异常", e);
+                    break;
+                }
+            }
+        }
+        return imageUrls;
+    }
 
     public static String uploadFileToOSS(File file) {
-        try {
-            String responseData = OSSPublicUploadInterface.ftpAttachment(file, "doctrans",
-                    "docx2html");
-            return getOssUrl(responseData);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        String responseData = OSSPublicUploadInterface.ftpAttachment(file, "doctrans", "docx2html");
+        return getOssUrl(responseData);
     }
     
-    public static String uploadFileToOSS(InputStream inputStream, String fileName) {
-        try {
-            String responseData = OSSPublicUploadInterface.ftpAttachment(inputStream,
-                    "doctrans", "docx2html", fileName);
-            return getOssUrl(responseData);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    private static String uploadFileToOSS(InputStream inputStream, String fileName) {
+        String responseData = OSSPublicUploadInterface.ftpAttachment(inputStream, "doctrans",
+                "docx2html", fileName);
+        return getOssUrl(responseData);
     }
     
     private static String getOssUrl(String responseData) {
-        if (StringUtils.isNotEmpty(responseData)) {
-            JSONObject jsonObject = JSONObject.parseObject(responseData);
-            JSONObject data = jsonObject.getJSONObject("data");
-            if (data != null) {
-                return data.getString("path");
-            }
+        JSONObject jsonObject = JSONObject.parseObject(responseData);
+        if ( !SUCCESS_CODE.equals(jsonObject.getString("code")) ) {
+            throw new IllegalStateException("http请求异常");
         }
-        return null;
+        JSONObject data = jsonObject.getJSONObject("data");
+        return data.getString("path");
+    }
+    
+    private static String getUploadFilename(String originName, String format) {
+        String uuid = UUIDUtils.createUUID();
+        if (format != null) {
+            return uuid + SYMBOL_BOT + format;
+        }
+        
+        if (originName.contains(SYMBOL_BOT)) {
+            String uploadFormat = originName.substring(originName.lastIndexOf(SYMBOL_BOT));
+            return uuid + SYMBOL_BOT + uploadFormat;
+        }
+        return uuid;
     }
 }
