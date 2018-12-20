@@ -19,6 +19,8 @@ public interface ImgConverter {
     
     String FORMAT_PNG = "png";
     
+    String SYMBOL_BOT = ".";
+    
     /**
      * 将图片转换为其它格式
      * @param in 源图片流

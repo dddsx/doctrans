@@ -1,5 +1,6 @@
 package com.zhihuishu.doctrans.converter;
 
+import com.sun.istack.internal.Nullable;
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.model.OMathData;
 import com.zhihuishu.doctrans.model.WmfData;
@@ -11,7 +12,10 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,32 +42,17 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     @Override
     public String convert(ConvertSetting setting) {
+        String html;
+        Instant convertTime = Instant.now();
         if (setting == null) {
             setting = new ConvertSetting();
         }
-        try (StringWriter htmlWriter = new StringWriter()){
+        try (StringWriter htmlWriter = new StringWriter()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("文档初始xml:" + document.getDocument().xmlText() + "\n");
             }
     
-            this.wmfDatas = equationExtracter.extractMathML(document);
-            Map<String, byte[]> imageBytesOfWMF = convertWMFToPNG();
-    
-            this.oMathDatas = equationExtracter.extractWMF(document);
-            Map<String, byte[]> imageBytesOfOMath = convertMathMLToPNG();
-            
-            if (logger.isDebugEnabled()) {
-                logger.debug("抽取公式后xml:" + document.getDocument().xmlText() + "\n");
-            }
-
-            // 使用Xdocreport转换为html
-            XHTMLOptions options = XHTMLOptions.create();
-            options.setFragment(setting.isFragment());
-            options.setIgnoreStylesIfUnused(true);
-            XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
-            xhtmlConverter.convert(document, htmlWriter, options);
-            String html = htmlWriter.toString();
-    
+            // 提取一般图片元数据
             Map<String, byte[]> imageBytes = new HashMap<>();
             List<XWPFPictureData> pictureDatas = document.getAllPictures();
             for (XWPFPictureData pictureData : pictureDatas) {
@@ -75,36 +64,99 @@ public class XdocreportConverter extends AbstractDocxConverter {
                 }
             }
             
-            Map<String, String> imageUrls = uploadImageToOSS(imageBytes);
-            html = replaceImgUrl(imageUrls, html);
-    
-            Map<String, String> wmfImageUrls = uploadImageToOSS(imageBytesOfWMF);
-            html = replaceWmfImgUrl(wmfImageUrls, html);
+            // 提取wmf和omath公式元数据, 并设置占位符
+            this.wmfDatas = equationExtracter.extractMathML(document);
+            this.oMathDatas = equationExtracter.extractWMF(document);
             
-            Map<String, String> oMathImageUrls = uploadImageToOSS(imageBytesOfOMath);
-            html = replaceOmathImgUrl(oMathImageUrls, html);
-    
-            if (logger.isDebugEnabled()) {
-                logger.debug("标准步骤转换后html:" + html + "\n");
+            int imageNum = imageBytes.size() + this.wmfDatas.size() + this.oMathDatas.size();
+            if (imageNum > 1000) {
+                logger.warn("文档中包含图片过多:" + imageNum);
             }
             
-            return postProcessHtml(html);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // 将公式转换为png
+            Instant convertPNGTime = Instant.now();
+            Map<String, byte[]> imageBytesOfWMF = convertWMFToPNG();
+            Map<String, byte[]> imageBytesOfOMath = convertMathMLToPNG();
+            long convertPNGUseTime = Duration.between(convertPNGTime, Instant.now()).toMillis();
+            logger.info("公式转PNG耗时:" + convertPNGUseTime + "毫秒");
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("抽取公式后xml:" + document.getDocument().xmlText() + "\n");
+            }
+
+            // 使用Xdocreport转换为html
+            Instant convertHtmlTime = Instant.now();
+            XHTMLOptions options = XHTMLOptions.create();
+            options.setFragment(setting.isFragment());
+            options.setIgnoreStylesIfUnused(true);
+            XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
+            xhtmlConverter.convert(document, htmlWriter, options);
+            long convertHtmlUseTime = Duration.between(convertHtmlTime, Instant.now()).toMillis();
+            logger.info("html转换耗时:" + convertHtmlUseTime + "毫秒");
+            
+            html = htmlWriter.toString();
+    
+            // 将图片上传到OSS
+            Instant uploadImgTime = Instant.now();
+            logger.info("将" + imageNum + "张图片上传到OSS服务器");
+            Map<String, String> imageUrls = uploadImageToOSS(imageBytes, null);
+            Map<String, String> wmfImageUrls = uploadImageToOSS(imageBytesOfWMF, FORMAT_PNG);
+            Map<String, String> oMathImageUrls = uploadImageToOSS(imageBytesOfOMath, FORMAT_PNG);
+            long uploadImgUseTime = Duration.between(uploadImgTime, Instant.now()).toMillis();
+            logger.info("上传图片耗时:" + uploadImgUseTime + "毫秒");
+            
+            // 网络图片URL替换
+            html = replaceImgUrl(imageUrls, html);
+            html = replaceWmfImgUrl(wmfImageUrls, html);
+            html = replaceOmathImgUrl(oMathImageUrls, html);
+            
+            html = postProcessHtml(html);
+        } catch (Exception e) {
+            logger.error("文档转换出现异常", e);
+            html = null;
         }
-        return "";
+        long convertUseTime = Duration.between(convertTime, Instant.now()).toMillis();
+        logger.info("文档转换总耗时:" + convertUseTime + "毫秒");
+        return html;
     }
     
-    private Map<String, String> uploadImageToOSS(Map<String, byte[]> imageBytes) {
-        Map<String, String> imageUrl = new HashMap<>();
+    /**
+     * 使用多线程方式上传图片到OSS服务器
+     * @param imageBytes 文件名 map to 文件数据
+     * @param format 图片格式
+     * @return 文件名 map to URL
+     */
+    private Map<String, String> uploadImageToOSS(Map<String, byte[]> imageBytes, @Nullable String format) {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        List<Future<Map<String, String>>> futures = new ArrayList<>();
         for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
-            String url = FileUploader.uploadFileToOSS(new ByteArrayInputStream(entry.getValue()),
-                    entry.getKey());
-            if (StringUtils.isNotEmpty(url)) {
-                imageUrl.put(entry.getKey(), url);
+            futures.add(executorService.submit(() -> {
+                String key = entry.getKey();
+                byte[] bytes = entry.getValue();
+                
+                String uploadFormt = format;
+                if (format == null && key.contains(SYMBOL_BOT)) {
+                    uploadFormt = key.substring(key.lastIndexOf(SYMBOL_BOT));
+                }
+                
+                // 将图片上传到OSS服务器, 并获得URL
+                String url = FileUploader.uploadFileToOSS(new ByteArrayInputStream(bytes),
+                        UUIDUtils.filenameUUID() + SYMBOL_BOT + uploadFormt);
+                return Collections.singletonMap(key, url);
+            }));
+        }
+        executorService.shutdown();
+    
+        Map<String, String> imageUrls = new HashMap<>();
+        for (Future<Map<String, String>> future : futures) {
+            try {
+                Map<String, String> singleMap = future.get();
+                imageUrls.putAll(singleMap);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
-        return imageUrl;
+        return imageUrls;
     }
     
     private String replaceImgUrl(Map<String, String> imageUrls, String orginHtml) {
