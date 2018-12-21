@@ -43,7 +43,7 @@ public class FileUploader {
                     String imageName = entry.getKey();
                     byte[] bytes = entry.getValue();
                     // 将图片上传到OSS服务器, 并获得URL
-                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getUploadFilename(imageName, format));
+                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
                     return Collections.singletonMap(imageName, url);
                 }));
             }
@@ -71,7 +71,7 @@ public class FileUploader {
                 byte[] bytes = entry.getValue();
                 try {
                     // 将图片上传到OSS服务器, 并获得URL
-                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getUploadFilename(imageName, format));
+                    String url = uploadFileToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
                     imageUrls.put(entry.getKey(), url);
                 } catch (Exception e) {
                     logger.error("http请求异常", e);
@@ -102,7 +102,7 @@ public class FileUploader {
         return data.getString("path");
     }
     
-    private static String getUploadFilename(String originName, String format) {
+    private static String getRandomFilename(String originName, String format) {
         String uuid = UUIDUtils.createUUID();
         if (format != null) {
             return uuid + SYMBOL_BOT + format;

@@ -6,10 +6,10 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.wmf.tosvg.WMFTranscoder;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+
+import static org.apache.batik.transcoder.ToSVGAbstractTranscoder.KEY_ESCAPED;
 
 public class BatikWMFConverter implements ImgConverter {
     
@@ -29,6 +29,7 @@ public class BatikWMFConverter implements ImgConverter {
         WMFTranscoder transcoder = new WMFTranscoder();
         TranscoderInput input = new TranscoderInput(in);
         TranscoderOutput output = new TranscoderOutput(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+        transcoder.addTranscodingHint(KEY_ESCAPED, true);
         transcoder.transcode(input, output);
     }
 }

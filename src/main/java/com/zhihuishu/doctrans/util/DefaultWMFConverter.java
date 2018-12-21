@@ -29,7 +29,7 @@ public class DefaultWMFConverter implements ImgConverter {
      */
     private void convertToSVG(InputStream in, OutputStream out) throws Exception {
         WmfParser parser = new WmfParser();
-        final SvgGdi gdi = new SvgGdi(false);
+        final SvgGdi gdi = new SvgGdi(true);
         gdi.setReplaceSymbolFont(true);
         parser.parse(in, gdi);
         Document doc = gdi.getDocument();
@@ -38,8 +38,10 @@ public class DefaultWMFConverter implements ImgConverter {
         // }
         TransformerFactory factory = TransformerFactory.newInstance();
         Transformer transformer = factory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-        //transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "yes");
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        // transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "yes");
         transformer.transform(new DOMSource(doc), new StreamResult(out));
     }
 }

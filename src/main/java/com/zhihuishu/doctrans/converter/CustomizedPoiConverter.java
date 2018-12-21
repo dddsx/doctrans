@@ -11,19 +11,24 @@ import java.io.InputStream;
 
 public class CustomizedPoiConverter extends AbstractDocxConverter {
     
+    private XWPFDocument document;
+    
     protected final Log logger = LogFactory.getLog(CustomizedPoiConverter.class);
     
-    public CustomizedPoiConverter(InputStream inputStream) throws IOException {
-        super(inputStream);
-    }
-    
-    public CustomizedPoiConverter(XWPFDocument document) {
-        super(document);
+    public CustomizedPoiConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
+        try (InputStream in = inputStream) {
+            this.document = new XWPFDocument(in);
+        }
+        if (setting != null) {
+            this.setting = setting;
+        } else {
+            this.setting = new ConvertSetting();
+        }
     }
     
     @Override
-    public String convert(ConvertSetting settings) {
-        XWPFDocumentVisitor visitor = new XWPFDocumentVisitor(document, settings);
+    public String convert() {
+        XWPFDocumentVisitor visitor = new XWPFDocumentVisitor(document, setting);
         visitor.visit();
         return visitor.getResult();
     }
