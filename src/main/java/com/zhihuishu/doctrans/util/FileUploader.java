@@ -2,22 +2,23 @@ package com.zhihuishu.doctrans.util;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
-import com.zhihuishu.doctrans.converter.AbstractDocxConverter;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static com.zhihuishu.doctrans.util.ImgConverter.SYMBOL_BOT;
 
 public class FileUploader {
     
-    private final static Log logger = LogFactory.getLog(FileUploader.class);
+    private final static Logger logger = LoggerFactory.getLogger(FileUploader.class);
     
     private final static String SUCCESS_CODE = "0";
     
@@ -33,7 +34,7 @@ public class FileUploader {
         Map<String, String> imageUrls = new HashMap<>();
         
         if (concurrentMode) {
-            ExecutorService executorService = Executors.newCachedThreadPool();
+            ExecutorService executorService = Executors.newFixedThreadPool(10);
             List<Future<Map<String, String>>> futures = new ArrayList<>();
             boolean hasShutdown = false;
             

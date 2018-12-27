@@ -2,8 +2,6 @@ package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.converter.support.XWPFDocumentVisitor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.IOException;
@@ -12,8 +10,6 @@ import java.io.InputStream;
 public class CustomizedPoiConverter extends AbstractDocxConverter {
     
     private XWPFDocument document;
-    
-    protected final Log logger = LogFactory.getLog(CustomizedPoiConverter.class);
     
     public CustomizedPoiConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
         try (InputStream in = inputStream) {

@@ -5,11 +5,14 @@ import com.zhihuishu.doctrans.model.OMathData;
 import com.zhihuishu.doctrans.model.WmfData;
 import com.zhihuishu.doctrans.util.*;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import static com.zhihuishu.doctrans.util.ImgConverter.FORMAT_PNG;
@@ -17,7 +20,7 @@ import static com.zhihuishu.doctrans.util.ImgConverter.FORMAT_SVG;
 
 public abstract class AbstractDocxConverter implements DocxConverter {
     
-    protected final Log logger = LogFactory.getLog(AbstractDocxConverter.class);
+    protected final Logger logger = LoggerFactory.getLogger(AbstractDocxConverter.class);
     
     protected ConvertSetting setting;
     

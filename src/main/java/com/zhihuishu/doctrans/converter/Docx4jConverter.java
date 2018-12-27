@@ -11,7 +11,9 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Document;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -58,7 +60,7 @@ public class Docx4jConverter extends AbstractDocxConverter {
         orginHtml = orginHtml.replaceAll("<\\/?(div|span|br\\/)[\\s\\S]*?>", "");
         // 使用<br>标签替代<p>标签换行方式
         List<String> ps = new ArrayList<>();
-        Pattern pElementPattern = RegexHelper.getpElementPattern();
+        Pattern pElementPattern = RegexHelper.getPElementPattern();
         Matcher matcher = pElementPattern.matcher(orginHtml);
         while (matcher.find()) {
             ps.add(matcher.group(1));

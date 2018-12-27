@@ -1,7 +1,8 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
-import com.zhihuishu.doctrans.util.*;
+import com.zhihuishu.doctrans.util.FileUploader;
+import com.zhihuishu.doctrans.util.RegexHelper;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -10,7 +11,10 @@ import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,7 +126,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
         orginHtml = orginHtml.replaceAll("<\\/?(div|span|br\\/)[\\s\\S]*?>", "");
         // 使用<br>标签替代<p>标签换行方式
         List<String> ps = new ArrayList<>();
-        Pattern pElementPattern = RegexHelper.getpElementPattern();
+        Pattern pElementPattern = RegexHelper.getPElementPattern();
         Matcher matcher = pElementPattern.matcher(orginHtml);
         while (matcher.find()) {
             ps.add(matcher.group(1));
