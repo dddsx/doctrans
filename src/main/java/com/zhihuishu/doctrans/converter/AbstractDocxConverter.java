@@ -52,9 +52,10 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     
     protected String replaceWmfImgUrl(Map<String, String> wmfImageUrls, String orginHtml) {
         String html = orginHtml;
-        for (Map.Entry<String, String> entry : wmfImageUrls.entrySet()) {
-            String url = entry.getValue();
-            String style = wmfDatas.get(entry.getKey()).getStyle();
+        for (Map.Entry<String, WmfData> entry : wmfDatas.entrySet()) {
+            String placeholder = entry.getKey();
+            String url = wmfImageUrls.get(placeholder);
+            String style = entry.getValue().getStyle();
             html = html.replace(entry.getKey(), createImgTag(url, style, 1.5));
         }
         return html;
@@ -62,9 +63,10 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     
     protected String replaceOmathImgUrl(Map<String, String> oMathImageUrls, String orginHtml) {
         String html = orginHtml;
-        for (Map.Entry<String, String> entry : oMathImageUrls.entrySet()) {
-            String url = entry.getValue();
-            html = html.replace(entry.getKey(), createImgTag(url));
+        for (Map.Entry<String, OMathData> entry : oMathDatas.entrySet()) {
+            String placeholder = entry.getKey();
+            String url = oMathImageUrls.get(placeholder);
+            html = html.replace(placeholder, createImgTag(url));
         }
         return html;
     }
