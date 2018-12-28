@@ -19,7 +19,7 @@ public class RegexHelperTest {
         imgUrls.put("image5.jpeg", "http://image.zhihuishu.com/zhs_yanfa_150820/doctrans/docx2html/201812/8image5f.jpeg");
         imgUrls.put("image3.jpeg", "http://image.zhihuishu.com/zhs_yanfa_150820/doctrans/docx2html/201812/8image3f.jpeg");
         
-        Matcher matcher = RegexHelper.getImgSrcPattern().matcher(originHtml);
+        Matcher matcher = RegexHelper.imgSrcPattern.matcher(originHtml);
         int index = 0;
         StringBuilder sb = new StringBuilder();
         Set<String> set = imgUrls.keySet();

@@ -19,8 +19,8 @@ public class SVGConverter implements ImgConverter {
     
     @Override
     public void convert(InputStream in, OutputStream out, ImgConfig config) throws Exception {
-        if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_PNG)) {
-            convertToPng(in, out);
+        if (StringUtils.equalsIgnoreCase(config.getTargetFormat(), FORMAT_PNG)) {
+            convertToPng(in, out, config);
         }
     }
     
@@ -29,13 +29,18 @@ public class SVGConverter implements ImgConverter {
      * @param in
      * @param out
      */
-    private void convertToPng(InputStream in, OutputStream out) throws Exception {
+    private void convertToPng(InputStream in, OutputStream out, ImgConfig config) throws Exception {
         String svgCode = IOUtils.toString(in, "UTF-8");
         Transcoder transcoder = new PNGTranscoder();
         // svgCode = svgCode.replaceAll(":rect", "rect");
         TranscoderInput input = new TranscoderInput(new StringReader(svgCode));
         TranscoderOutput output = new TranscoderOutput(out);
-        transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, 400F);
+        if (config.getWidth() != null) {
+            transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, config.getWidth().floatValue());
+        }
+        if (config.getHeight() != null) {
+            transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, config.getHeight().floatValue());
+        }
         transcoder.addTranscodingHint(PNGTranscoder.KEY_BACKGROUND_COLOR, Color.white);
         transcoder.addTranscodingHint(PNGTranscoder.KEY_INDEXED, 1);
         transcoder.addTranscodingHint(XMLAbstractTranscoder.KEY_DOM_IMPLEMENTATION, SVGDOMImplementation.getDOMImplementation());

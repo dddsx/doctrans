@@ -33,52 +33,58 @@ public interface ImgConverter {
     }
     
     class ImgConfig {
-        
-        private String format;
     
-        private Double height;
+        private String targetFormat;
     
-        private Double width;
+        private Integer width;
         
+        private Integer height;
+    
         private Integer quality;
     
         public ImgConfig() {
         
         }
-        
-        public ImgConfig(String format) {
-            this.format = format;
+    
+        public ImgConfig(String targetFormat) {
+            this.targetFormat = targetFormat;
         }
-        
-        public ImgConfig(String format, Double height, Double width, Integer quality) {
-            this.format = format;
-            this.height = height;
+    
+        public ImgConfig(String targetFormat, Integer width, Integer height) {
+            this.targetFormat = targetFormat;
             this.width = width;
+            this.height = height;
+        }
+    
+        public ImgConfig(String targetFormat, Integer width, Integer height, Integer quality) {
+            this.targetFormat = targetFormat;
+            this.width = width;
+            this.height = height;
             this.quality = quality;
         }
     
-        public String getFormat() {
-            return format;
+        public String getTargetFormat() {
+            return targetFormat;
         }
     
-        public void setFormat(String format) {
-            this.format = format;
+        public void setTargetFormat(String targetFormat) {
+            this.targetFormat = targetFormat;
         }
     
-        public Double getHeight() {
-            return height;
-        }
-    
-        public void setHeight(Double height) {
-            this.height = height;
-        }
-    
-        public Double getWidth() {
+        public Integer getWidth() {
             return width;
         }
     
-        public void setWidth(Double width) {
+        public void setWidth(Integer width) {
             this.width = width;
+        }
+        
+        public Integer getHeight() {
+            return height;
+        }
+    
+        public void setHeight(Integer height) {
+            this.height = height;
         }
     
         public Integer getQuality() {

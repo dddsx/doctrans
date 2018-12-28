@@ -60,7 +60,7 @@ public class Docx4jConverter extends AbstractDocxConverter {
         orginHtml = orginHtml.replaceAll("<\\/?(div|span|br\\/)[\\s\\S]*?>", "");
         // 使用<br>标签替代<p>标签换行方式
         List<String> ps = new ArrayList<>();
-        Pattern pElementPattern = RegexHelper.getPElementPattern();
+        Pattern pElementPattern = RegexHelper.pElementPattern;
         Matcher matcher = pElementPattern.matcher(orginHtml);
         while (matcher.find()) {
             ps.add(matcher.group(1));

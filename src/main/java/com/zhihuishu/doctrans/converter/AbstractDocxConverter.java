@@ -30,7 +30,7 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     
     protected String replaceImgUrl(Map<String, String> imageUrls, String orginHtml) {
         StringBuilder html = new StringBuilder();
-        Matcher matcher = RegexHelper.getImgSrcPattern().matcher(orginHtml);
+        Matcher matcher = RegexHelper.imgSrcPattern.matcher(orginHtml);
         Set<String> set = imageUrls.keySet();
         
         int index = 0;
@@ -53,7 +53,9 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     protected String replaceWmfImgUrl(Map<String, String> wmfImageUrls, String orginHtml) {
         String html = orginHtml;
         for (Map.Entry<String, String> entry : wmfImageUrls.entrySet()) {
-            html = html.replace(entry.getKey(), createImgTag(entry.getValue(), wmfDatas.get(entry.getKey()).getStyle()));
+            String url = entry.getValue();
+            String style = wmfDatas.get(entry.getKey()).getStyle();
+            html = html.replace(entry.getKey(), createImgTag(url, style, 1.5));
         }
         return html;
     }
@@ -61,7 +63,8 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     protected String replaceOmathImgUrl(Map<String, String> oMathImageUrls, String orginHtml) {
         String html = orginHtml;
         for (Map.Entry<String, String> entry : oMathImageUrls.entrySet()) {
-            html = html.replace(entry.getKey(), createImgTag(entry.getValue(), null));
+            String url = entry.getValue();
+            html = html.replace(entry.getKey(), createImgTag(url));
         }
         return html;
     }
@@ -78,8 +81,12 @@ public abstract class AbstractDocxConverter implements DocxConverter {
                 
                 ByteArrayInputStream svgInput = new ByteArrayInputStream(svgOutput.toByteArray());
                 ByteArrayOutputStream pngOutput = new ByteArrayOutputStream();
-                svgConverter.convert(svgInput, pngOutput, new ImgConverter.ImgConfig(FORMAT_PNG));
                 
+                String style = wmfData.getStyle();
+                Double[] styles = parseImgStyle(style);
+                // 原图放大4倍
+                svgConverter.convert(svgInput, pngOutput, new ImgConverter
+                        .ImgConfig(FORMAT_PNG, styles[0].intValue() * 4, styles[1].intValue() * 4));
                 pngBytes.put(wmfData.getPlaceholder(), pngOutput.toByteArray());
             } catch (Exception e) {
                 logger.error("wmf转png出现错误", e);
@@ -102,13 +109,54 @@ public abstract class AbstractDocxConverter implements DocxConverter {
         return pngBytes;
     }
     
+    private String createImgTag(String url) {
+        return createImgTag(url, null, null);
+    }
+    
     private String createImgTag(String url, String style) {
+        return createImgTag(url, style, null);
+    }
+    
+    private String createImgTag(String url, String style, Double multiple) {
         if(url == null){
             url = "";
         }
-        if(style == null){
-            style = "";
+        
+        if(StringUtils.isEmpty(style)){
+            return "<img src=\"" + url + "\">";
+        } else {
+            Double[] styles = parseImgStyle(style);
+            int width; int height;
+            if (multiple == null) {
+                width = styles[0].intValue();
+                height = styles[1].intValue();
+            } else {
+                width = new Double(styles[0] * multiple).intValue();
+                height = new Double(styles[1] * multiple).intValue();
+            }
+            return "<img src=\"" + url + "\" " +
+                    "width=\"" + width + "px\" " +
+                    "height=\"" + height + "px\">";
         }
-        return "<img src=\"" + url + "\" style=\"" + style + "\">";
+    }
+    
+    private Double[] parseImgStyle(String style) {
+        Double[] styles = new Double[2];
+        Matcher matcher;
+        if ((matcher = RegexHelper.widthValuePattern.matcher(style)).find()) {
+            if ("pt".equals(matcher.group(2))) {
+                styles[0] = Double.parseDouble(matcher.group(1)) * 4 / 3;
+            } else {
+                styles[0] = Double.parseDouble(matcher.group(1));
+            }
+        }
+        if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
+            if ("pt".equals(matcher.group(2))) {
+                styles[1] = Double.parseDouble(matcher.group(1)) * 4 / 3;
+            } else {
+                styles[1] = Double.parseDouble(matcher.group(1));
+            }
+        }
+        return styles;
     }
 }

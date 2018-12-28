@@ -1,20 +1,17 @@
 package com.zhihuishu.doctrans.converter;
 
+import com.zhihuishu.doctrans.BaseTest;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
 
-public class CustomizedPoiConverterTest {
+public class CustomizedPoiConverterTest extends BaseTest {
     
     @Test
-    public void testConvert(){
-        try {
-            URL fileUrl = this.getClass().getClassLoader().getResource("com/zhihuishu/doctrans/word公式.docx");
-            DocxConverter converter = new CustomizedPoiConverter(fileUrl.openStream(), null);
-            System.out.println(converter.convert());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void testConvert() throws IOException {
+        URL fileUrl = this.getClass().getClassLoader().getResource("docx/试卷.docx");
+        DocxConverter converter = new CustomizedPoiConverter(fileUrl.openStream(), null);
+        System.out.println(converter.convert());
     }
 }

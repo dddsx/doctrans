@@ -27,7 +27,8 @@ public class MathMLConverter {
         Document document = convertStringToDocument(getMathML(node));
         Converter mathMLConvert = Converter.getInstance();
         LayoutContextImpl localLayoutContextImpl = new LayoutContextImpl(LayoutContextImpl.getDefaultLayoutContext());
-        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 25);
+        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 26);
+        localLayoutContextImpl.setParameter(Parameter.MATHBACKGROUND, "white");
         mathMLConvert.convert(document, outputStream, "image/png", localLayoutContextImpl);
     }
     

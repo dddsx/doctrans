@@ -5,7 +5,7 @@
 
     <groupId>com.zhihuishu</groupId>
     <artifactId>doctrans</artifactId>
-    <version>0.9.91</version>
+    <version>0.9.93</version>
     <packaging>jar</packaging>
     <name>doctrans</name>
     <description>the utils to deal with word</description>
@@ -14,8 +14,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <!--打包时过滤test-->
-        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -173,6 +171,10 @@
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>

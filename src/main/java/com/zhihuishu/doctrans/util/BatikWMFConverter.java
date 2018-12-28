@@ -17,7 +17,7 @@ public class BatikWMFConverter implements ImgConverter {
     
     @Override
     public void convert(InputStream in, OutputStream out, ImgConfig config) throws TranscoderException {
-        if (StringUtils.equalsIgnoreCase(config.getFormat(), FORMAT_SVG)) {
+        if (StringUtils.equalsIgnoreCase(config.getTargetFormat(), FORMAT_SVG)) {
             convertToSVG(in, out);
         }
     }
