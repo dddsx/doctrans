@@ -15,9 +15,11 @@ public class Docx4jConverterTest extends BaseTest {
     
     @Test
     public void testConvert() throws IOException, Docx4JException {
-        InputStream inputStream = new FileInputStream(new File(rootFile, "docx/试卷.docx"));
+        String docxName = "错乱序号";
+        InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         DocxConverter docxConverter = new Docx4jConverter(inputStream, null);
         String html = docxConverter.convert();
-        FileUtils.writeStringToFile(new File(rootFile, "html/试卷-docx4j.html"), html, Charset.forName("UTF-8"));
+        FileUtils.writeStringToFile(new File(
+                rootFile, "html/" + docxName + "-docx4j.html"), html, Charset.forName("UTF-8"));
     }
 }

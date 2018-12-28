@@ -75,18 +75,27 @@ public abstract class AbstractDocxConverter implements DocxConverter {
         ImgConverter svgConverter = new SVGConverter();
         for (WmfData wmfData : wmfDatas.values()) {
             try {
+                // wmf => svg
                 ByteArrayInputStream wmfInput = new ByteArrayInputStream(wmfData.getBytes());
                 ByteArrayOutputStream svgOutput = new ByteArrayOutputStream();
                 wmfConverter.convert(wmfInput, svgOutput, new ImgConverter.ImgConfig(FORMAT_SVG));
                 
+                // svg => png
                 ByteArrayInputStream svgInput = new ByteArrayInputStream(svgOutput.toByteArray());
                 ByteArrayOutputStream pngOutput = new ByteArrayOutputStream();
-                
                 String style = wmfData.getStyle();
                 Double[] styles = parseImgStyle(style);
-                // 原图放大4倍
+                Integer width = null;
+                Integer height = null;
+                if (styles[0] != null) {
+                    // 原图放大4倍
+                    width = styles[0].intValue() * 4;
+                }
+                if (styles[1] != null) {
+                    height = styles[1].intValue() * 4;
+                }
                 svgConverter.convert(svgInput, pngOutput, new ImgConverter
-                        .ImgConfig(FORMAT_PNG, styles[0].intValue() * 4, styles[1].intValue() * 4));
+                        .ImgConfig(FORMAT_PNG, width, height));
                 pngBytes.put(wmfData.getPlaceholder(), pngOutput.toByteArray());
             } catch (Exception e) {
                 logger.error("wmf转png出现错误", e);
@@ -142,20 +151,24 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     
     private Double[] parseImgStyle(String style) {
         Double[] styles = new Double[2];
-        Matcher matcher;
-        if ((matcher = RegexHelper.widthValuePattern.matcher(style)).find()) {
-            if ("pt".equals(matcher.group(2))) {
-                styles[0] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-            } else {
-                styles[0] = Double.parseDouble(matcher.group(1));
+        try {
+            Matcher matcher;
+            if ((matcher = RegexHelper.widthValuePattern.matcher(style)).find()) {
+                if ("pt".equals(matcher.group(2))) {
+                    styles[0] = Double.parseDouble(matcher.group(1)) * 4 / 3;
+                } else {
+                    styles[0] = Double.parseDouble(matcher.group(1));
+                }
             }
-        }
-        if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
-            if ("pt".equals(matcher.group(2))) {
-                styles[1] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-            } else {
-                styles[1] = Double.parseDouble(matcher.group(1));
+            if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
+                if ("pt".equals(matcher.group(2))) {
+                    styles[1] = Double.parseDouble(matcher.group(1)) * 4 / 3;
+                } else {
+                    styles[1] = Double.parseDouble(matcher.group(1));
+                }
             }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         return styles;
     }
