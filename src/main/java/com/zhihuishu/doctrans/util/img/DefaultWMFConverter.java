@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.util;
+package com.zhihuishu.doctrans.util.img;
 
 import net.arnx.wmf2svg.gdi.svg.SvgGdi;
 import net.arnx.wmf2svg.gdi.wmf.WmfParser;

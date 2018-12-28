@@ -4,6 +4,10 @@ import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.model.OMathData;
 import com.zhihuishu.doctrans.model.WmfData;
 import com.zhihuishu.doctrans.util.*;
+import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
+import com.zhihuishu.doctrans.util.img.ImgConverter;
+import com.zhihuishu.doctrans.util.img.MathMLConverter;
+import com.zhihuishu.doctrans.util.img.SVGConverter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.FORMAT_PNG;
-import static com.zhihuishu.doctrans.util.ImgConverter.FORMAT_SVG;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_PNG;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_SVG;
 
 public abstract class AbstractDocxConverter implements DocxConverter {
     

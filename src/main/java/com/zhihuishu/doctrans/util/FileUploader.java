@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.SYMBOL_BOT;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.SYMBOL_BOT;
 
 public class FileUploader {
     

@@ -1,6 +1,9 @@
 package com.zhihuishu.doctrans.util;
 
 import com.zhihuishu.doctrans.BaseTest;
+import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
+import com.zhihuishu.doctrans.util.img.ImgConverter;
+import com.zhihuishu.doctrans.util.img.SVGConverter;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,7 +11,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileInputStream;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.*;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.*;
 
 public class SVGConverterTest extends BaseTest {
     

@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.util;
+package com.zhihuishu.doctrans.util.img;
 
 import org.apache.commons.lang.StringUtils;
 

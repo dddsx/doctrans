@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.util;
+package com.zhihuishu.doctrans.util.img;
 
 import com.zhihuishu.doctrans.support.MathMLHandler;
 import net.sourceforge.jeuclid.context.LayoutContextImpl;

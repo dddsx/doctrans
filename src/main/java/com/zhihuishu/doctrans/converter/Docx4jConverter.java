@@ -48,31 +48,10 @@ public class Docx4jConverter extends AbstractDocxConverter {
             Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
             
             String html = os.toString("UTF-8");
-            return postProcessHtml(html);
+            return html;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "";
-    }
-    
-    protected String postProcessHtml(String orginHtml) {
-        // 去掉div、span标签
-        orginHtml = orginHtml.replaceAll("<\\/?(div|span|br\\/)[\\s\\S]*?>", "");
-        // 使用<br>标签替代<p>标签换行方式
-        List<String> ps = new ArrayList<>();
-        Pattern pElementPattern = RegexHelper.pElementPattern;
-        Matcher matcher = pElementPattern.matcher(orginHtml);
-        while (matcher.find()) {
-            ps.add(matcher.group(1));
-        }
-    
-        StringBuilder html = new StringBuilder();
-        for (int i = 0; i < ps.size(); i++) {
-            html.append(ps.get(i));
-            if (i != ps.size() - 1) {
-                html.append("<br>");
-            }
-        }
-        return html.toString();
     }
 }

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.FORMAT_PNG;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_PNG;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_WMF;
 
@@ -110,8 +110,6 @@ public class XdocreportConverter extends AbstractDocxConverter {
             html = replaceImgUrl(imageUrls, html);
             html = replaceWmfImgUrl(wmfImageUrls, html);
             html = replaceOmathImgUrl(oMathImageUrls, html);
-            
-            html = postProcessHtml(html);
         } catch (Exception e) {
             logger.error("文档转换出现异常", e);
             html = null;
@@ -119,26 +117,5 @@ public class XdocreportConverter extends AbstractDocxConverter {
         long convertUseTime = Duration.between(convertTime, Instant.now()).toMillis();
         logger.info("文档转换总耗时:" + convertUseTime + "毫秒");
         return html;
-    }
-    
-    protected String postProcessHtml(String orginHtml) {
-        // 去掉div、span标签
-        orginHtml = orginHtml.replaceAll("<\\/?(div|span|br\\/)[\\s\\S]*?>", "");
-        // 使用<br>标签替代<p>标签换行方式
-        List<String> ps = new ArrayList<>();
-        Pattern pElementPattern = RegexHelper.pElementPattern;
-        Matcher matcher = pElementPattern.matcher(orginHtml);
-        while (matcher.find()) {
-            ps.add(matcher.group(1));
-        }
-        
-        StringBuilder html = new StringBuilder();
-        for (int i = 0; i < ps.size(); i++) {
-            html.append(ps.get(i));
-            if (i != ps.size() - 1) {
-                html.append("<br>");
-            }
-        }
-        return html.toString();
     }
 }

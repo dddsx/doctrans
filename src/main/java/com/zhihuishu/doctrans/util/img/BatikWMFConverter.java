@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.util;
+package com.zhihuishu.doctrans.util.img;
 
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;

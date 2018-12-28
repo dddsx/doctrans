@@ -1,13 +1,16 @@
 package com.zhihuishu.doctrans.util;
 
 import com.zhihuishu.doctrans.BaseTest;
+import com.zhihuishu.doctrans.util.img.BatikWMFConverter;
+import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
+import com.zhihuishu.doctrans.util.img.ImgConverter;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.*;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.*;
 
 public class WMFConverterTest extends BaseTest {
     
