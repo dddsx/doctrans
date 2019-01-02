@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 
 import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_PNG;
 import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_SVG;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.ImgConfig;
 
 public abstract class AbstractDocxConverter implements DocxConverter {
     
@@ -59,8 +60,8 @@ public abstract class AbstractDocxConverter implements DocxConverter {
         for (Map.Entry<String, WmfData> entry : wmfDatas.entrySet()) {
             String placeholder = entry.getKey();
             String url = wmfImageUrls.get(placeholder);
-            String style = entry.getValue().getStyle();
-            html = html.replace(entry.getKey(), createImgTag(url, style, 1.5));
+            WmfData wmfData = entry.getValue();
+            html = html.replace(entry.getKey(), createImgTag(url, wmfData.getWidth(), wmfData.getHeight(), 1.5));
         }
         return html;
     }
@@ -84,24 +85,15 @@ public abstract class AbstractDocxConverter implements DocxConverter {
                 // wmf => svg
                 ByteArrayInputStream wmfInput = new ByteArrayInputStream(wmfData.getBytes());
                 ByteArrayOutputStream svgOutput = new ByteArrayOutputStream();
-                wmfConverter.convert(wmfInput, svgOutput, new ImgConverter.ImgConfig(FORMAT_SVG));
+                wmfConverter.convert(wmfInput, svgOutput, new ImgConfig(FORMAT_SVG));
                 
                 // svg => png
                 ByteArrayInputStream svgInput = new ByteArrayInputStream(svgOutput.toByteArray());
                 ByteArrayOutputStream pngOutput = new ByteArrayOutputStream();
-                String style = wmfData.getStyle();
-                Double[] styles = parseImgStyle(style);
-                Integer width = null;
-                Integer height = null;
-                if (styles[0] != null) {
-                    // 原图放大4倍
-                    width = styles[0].intValue() * 4;
-                }
-                if (styles[1] != null) {
-                    height = styles[1].intValue() * 4;
-                }
-                svgConverter.convert(svgInput, pngOutput, new ImgConverter
-                        .ImgConfig(FORMAT_PNG, width, height));
+                // 将原图放大4倍
+                Integer width = new Double(wmfData.getWidth() * 4).intValue();
+                Integer height = new Double(wmfData.getHeight() * 4).intValue();
+                svgConverter.convert(svgInput, pngOutput, new ImgConfig(FORMAT_PNG, width, height));
                 pngBytes.put(wmfData.getPlaceholder(), pngOutput.toByteArray());
             } catch (Exception e) {
                 logger.error("wmf转png出现错误", e);
@@ -125,57 +117,29 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     }
     
     private String createImgTag(String url) {
-        return createImgTag(url, null, null);
+        return createImgTag(url, null, null, null);
     }
     
-    private String createImgTag(String url, String style) {
-        return createImgTag(url, style, null);
-    }
-    
-    private String createImgTag(String url, String style, Double multiple) {
+    private String createImgTag(String url, Double width, Double height, Double multiple) {
         if(url == null){
             url = "";
         }
         
-        if(StringUtils.isEmpty(style)){
+        if(width == null || height == null){
             return "<img src=\"" + url + "\">";
         } else {
-            Double[] styles = parseImgStyle(style);
-            int width; int height;
+            int widthInt;
+            int heightInt;
             if (multiple == null) {
-                width = styles[0].intValue();
-                height = styles[1].intValue();
+                widthInt = width.intValue();
+                heightInt = height.intValue();
             } else {
-                width = new Double(styles[0] * multiple).intValue();
-                height = new Double(styles[1] * multiple).intValue();
+                widthInt = new Double(width * multiple).intValue();
+                heightInt = new Double(height * multiple).intValue();
             }
             return "<img src=\"" + url + "\" " +
-                    "width=\"" + width + "px\" " +
-                    "height=\"" + height + "px\">";
+                    "width=\"" + widthInt + "px\" " +
+                    "height=\"" + heightInt + "px\">";
         }
-    }
-    
-    private Double[] parseImgStyle(String style) {
-        Double[] styles = new Double[2];
-        try {
-            Matcher matcher;
-            if ((matcher = RegexHelper.widthValuePattern.matcher(style)).find()) {
-                if ("pt".equals(matcher.group(2))) {
-                    styles[0] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-                } else {
-                    styles[0] = Double.parseDouble(matcher.group(1));
-                }
-            }
-            if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
-                if ("pt".equals(matcher.group(2))) {
-                    styles[1] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-                } else {
-                    styles[1] = Double.parseDouble(matcher.group(1));
-                }
-            }
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return styles;
     }
 }

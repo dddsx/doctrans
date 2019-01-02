@@ -1,9 +1,7 @@
 package com.zhihuishu.doctrans.support;
 
 import com.zhihuishu.doctrans.model.OMathData;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.officeDocument.x2006.math.CTOMath;
@@ -15,19 +13,55 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 提取document中用omath表示的公式。方法是在提取处设置CTR占位符，并将提取到元数据返回。
+ */
 public class MathMLHandler {
+    
+    private XWPFDocument document;
     
     /** 用于生成mathML占位符, 在一个document中标识唯一的mathML */
     private int mathNum = 1;
     
     private Map<String, OMathData> wmfDatas = new HashMap<>();
     
-    public Map<String, OMathData> extractMathML(XWPFDocument document) {
-        List<XWPFParagraph> paragraphs = document.getParagraphs();
-        for (XWPFParagraph paragraph : paragraphs) {
-            extractMathMLInParagraph(paragraph);
+    public MathMLHandler(XWPFDocument document) {
+        this.document = document;
+    }
+    
+    public Map<String, OMathData> extractMathML() {
+        List<IBodyElement> bodyElements = document.getBodyElements();
+        for (IBodyElement bodyElement : bodyElements) {
+            switch (bodyElement.getElementType()) {
+                case PARAGRAPH:
+                    XWPFParagraph paragraph = (XWPFParagraph) bodyElement;
+                    extractMathMLInParagraph(paragraph);
+                    break;
+                case TABLE:
+                    XWPFTable table = (XWPFTable) bodyElement;
+                    extractMathMLInTable(table);
+                    break;
+                case CONTENTCONTROL:
+                    // ignore
+                    break;
+                default:
+                    break;
+            }
         }
         return wmfDatas;
+    }
+    
+    public void extractMathMLInTable(XWPFTable table) {
+        List<XWPFTableRow> rows = table.getRows();
+        for (XWPFTableRow row : rows) {
+            List<XWPFTableCell> cells = row.getTableCells();
+            for (XWPFTableCell cell : cells) {
+                List<XWPFParagraph> paragraphs = cell.getParagraphs();
+                for (XWPFParagraph paragraph : paragraphs) {
+                    extractMathMLInParagraph(paragraph);
+                }
+            }
+        }
     }
     
     public void extractMathMLInParagraph(XWPFParagraph paragraph) {

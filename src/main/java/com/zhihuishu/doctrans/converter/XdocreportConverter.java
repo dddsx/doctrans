@@ -1,6 +1,8 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
+import com.zhihuishu.doctrans.support.MathMLHandler;
+import com.zhihuishu.doctrans.support.WMFImgHandler;
 import com.zhihuishu.doctrans.util.FileUploader;
 import com.zhihuishu.doctrans.util.RegexHelper;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
@@ -11,12 +13,9 @@ import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_PNG;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
@@ -26,18 +25,17 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     private XWPFDocument document;
     
-    /** 公式提取器 */
-    private PlaceholderEquationExtractor equationExtracter = new PlaceholderEquationExtractor();
+    private WMFImgHandler wmfImgHandler;
+    
+    private MathMLHandler mathMLHandler;
     
     public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
         try (InputStream in = inputStream) {
-            this.document = new XWPFDocument(in);
+            document = new XWPFDocument(in);
         }
-        if (setting != null) {
-            this.setting = setting;
-        } else {
-            this.setting = new ConvertSetting();
-        }
+        this.setting = setting == null ? new ConvertSetting() : setting;
+        mathMLHandler = new MathMLHandler(document);
+        wmfImgHandler = new WMFImgHandler(document);
     }
     
     public XdocreportConverter(File file, ConvertSetting setting) throws IOException {
@@ -66,10 +64,10 @@ public class XdocreportConverter extends AbstractDocxConverter {
             }
             
             // 提取wmf和omath公式元数据, 并设置占位符
-            this.wmfDatas = equationExtracter.extractMathML(document);
-            this.oMathDatas = equationExtracter.extractWMF(document);
+            wmfDatas = wmfImgHandler.extractWMF();
+            oMathDatas = mathMLHandler.extractMathML();
             
-            int imageNum = imageBytes.size() + this.wmfDatas.size() + this.oMathDatas.size();
+            int imageNum = imageBytes.size() + wmfDatas.size() + oMathDatas.size();
             if (imageNum > 1000) {
                 logger.warn("文档中包含图片过多:" + imageNum);
             }

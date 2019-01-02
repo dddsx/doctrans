@@ -6,35 +6,30 @@ public class WmfData {
     
     private byte[] bytes;
     
-    private String style;
+    private Double width;
     
-    public WmfData(String placeholder, byte[] bytes, String style) {
+    private Double height;
+    
+    public WmfData(String placeholder, byte[] bytes, Double width, Double height) {
         this.placeholder = placeholder;
         this.bytes = bytes;
-        this.style = style;
+        this.width = width;
+        this.height = height;
     }
     
     public String getPlaceholder() {
         return placeholder;
     }
     
-    public void setPlaceholder(String placeholder) {
-        this.placeholder = placeholder;
-    }
-    
     public byte[] getBytes() {
         return bytes;
     }
     
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
+    public Double getWidth() {
+        return width;
     }
     
-    public String getStyle() {
-        return style;
-    }
-    
-    public void setStyle(String style) {
-        this.style = style;
+    public Double getHeight() {
+        return height;
     }
 }
