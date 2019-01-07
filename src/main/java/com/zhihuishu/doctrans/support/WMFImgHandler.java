@@ -148,8 +148,8 @@ public class WMFImgHandler {
                         XWPFPictureData pictureData = document.getPictureDataByID(rId);
     
                         Double[] styles = parseWMFStyle(ctShape.getStyle());
-                        double width = styles[0];
-                        double height = styles[1];
+                        Double width = styles[0];
+                        Double height = styles[1];
                         
                         wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
                         createWMFPlaceholder(run, placeholder);

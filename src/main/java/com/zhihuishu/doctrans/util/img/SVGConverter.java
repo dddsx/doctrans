@@ -1,6 +1,5 @@
 package com.zhihuishu.doctrans.util.img;
 
-import com.zhihuishu.doctrans.util.img.ImgConverter;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.apache.batik.transcoder.Transcoder;
 import org.apache.batik.transcoder.TranscoderInput;

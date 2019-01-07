@@ -87,13 +87,15 @@ public abstract class AbstractDocxConverter implements DocxConverter {
                 ByteArrayOutputStream svgOutput = new ByteArrayOutputStream();
                 wmfConverter.convert(wmfInput, svgOutput, new ImgConfig(FORMAT_SVG));
                 
-                // svg => png
+                // svg => png, 将原图放大四倍
                 ByteArrayInputStream svgInput = new ByteArrayInputStream(svgOutput.toByteArray());
                 ByteArrayOutputStream pngOutput = new ByteArrayOutputStream();
-                // 将原图放大4倍
-                Integer width = new Double(wmfData.getWidth() * 4).intValue();
-                Integer height = new Double(wmfData.getHeight() * 4).intValue();
-                svgConverter.convert(svgInput, pngOutput, new ImgConfig(FORMAT_PNG, width, height));
+                Integer biggerWidth = wmfData.getWidth() == null ?
+                        null : new Double(wmfData.getWidth() * 4).intValue();
+                Integer biggerHeight = wmfData.getHeight() == null ?
+                        null : new Double(wmfData.getHeight() * 4).intValue();
+                svgConverter.convert(svgInput, pngOutput, new ImgConfig(FORMAT_PNG, biggerWidth, biggerHeight));
+                
                 pngBytes.put(wmfData.getPlaceholder(), pngOutput.toByteArray());
             } catch (Exception e) {
                 logger.error("wmf转png出现错误", e);

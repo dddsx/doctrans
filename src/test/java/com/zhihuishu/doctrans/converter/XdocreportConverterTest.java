@@ -14,7 +14,7 @@ public class XdocreportConverterTest extends BaseTest {
     
     @Test
     public void testConvert() throws IOException {
-        String docxName = "概率统计";
+        String docxName = "复变函数";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         DocxConverter docxConverter = new XdocreportConverter(inputStream, null);
         String html = docxConverter.convert();
