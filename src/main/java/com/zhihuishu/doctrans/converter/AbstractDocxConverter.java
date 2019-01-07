@@ -3,10 +3,10 @@ package com.zhihuishu.doctrans.converter;
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.model.OMathData;
 import com.zhihuishu.doctrans.model.WmfData;
-import com.zhihuishu.doctrans.util.*;
+import com.zhihuishu.doctrans.util.RegexHelper;
 import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
 import com.zhihuishu.doctrans.util.img.ImgConverter;
-import com.zhihuishu.doctrans.util.img.MathMLConverter;
+import com.zhihuishu.doctrans.util.img.OMathConverter;
 import com.zhihuishu.doctrans.util.img.SVGConverter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -19,9 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_PNG;
-import static com.zhihuishu.doctrans.util.img.ImgConverter.FORMAT_SVG;
-import static com.zhihuishu.doctrans.util.img.ImgConverter.ImgConfig;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.*;
 
 public abstract class AbstractDocxConverter implements DocxConverter {
     
@@ -32,49 +30,6 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     protected Map<String, WmfData> wmfDatas;
     
     protected Map<String, OMathData> oMathDatas;
-    
-    protected String replaceImgUrl(Map<String, String> imageUrls, String orginHtml) {
-        StringBuilder html = new StringBuilder();
-        Matcher matcher = RegexHelper.imgSrcPattern.matcher(orginHtml);
-        Set<String> set = imageUrls.keySet();
-        
-        int index = 0;
-        String localUri;
-        while (matcher.find()) {
-            localUri = matcher.group(1);
-            String url = "";
-            for (String imageName : set) {
-                if (StringUtils.containsIgnoreCase(localUri, imageName)) {
-                    url = imageUrls.get(imageName);
-                }
-            }
-            html.append(orginHtml, index, matcher.start(1)).append(url);
-            index = matcher.end(1);
-        }
-        html.append(orginHtml.substring(index));
-        return html.toString();
-    }
-    
-    protected String replaceWmfImgUrl(Map<String, String> wmfImageUrls, String orginHtml) {
-        String html = orginHtml;
-        for (Map.Entry<String, WmfData> entry : wmfDatas.entrySet()) {
-            String placeholder = entry.getKey();
-            String url = wmfImageUrls.get(placeholder);
-            WmfData wmfData = entry.getValue();
-            html = html.replace(entry.getKey(), createImgTag(url, wmfData.getWidth(), wmfData.getHeight(), 1.5));
-        }
-        return html;
-    }
-    
-    protected String replaceOmathImgUrl(Map<String, String> oMathImageUrls, String orginHtml) {
-        String html = orginHtml;
-        for (Map.Entry<String, OMathData> entry : oMathDatas.entrySet()) {
-            String placeholder = entry.getKey();
-            String url = oMathImageUrls.get(placeholder);
-            html = html.replace(placeholder, createImgTag(url));
-        }
-        return html;
-    }
     
     protected Map<String, byte[]> convertWMFToPNG() {
         Map<String, byte[]> pngBytes = new HashMap<>();
@@ -104,18 +59,62 @@ public abstract class AbstractDocxConverter implements DocxConverter {
         return pngBytes;
     }
     
-    protected Map<String, byte[]> convertMathMLToPNG() {
+    protected Map<String, byte[]> convertOMathToPNG() {
         Map<String, byte[]> pngBytes = new HashMap<>();
         for (OMathData mathMLData : oMathDatas.values()) {
             try {
                 ByteArrayOutputStream pngOutput = new ByteArrayOutputStream();
-                MathMLConverter.convertOmathToPNG(mathMLData.getNode(), pngOutput);
+                OMathConverter.convertOmathToPNG(mathMLData.getNode(), pngOutput);
                 pngBytes.put(mathMLData.getPlaceholder(), pngOutput.toByteArray());
             } catch (Exception e) {
                 logger.error("omath转png出现错误", e);
             }
         }
         return pngBytes;
+    }
+    
+    protected String replaceImgUrl(Map<String, String> imageUrls, String orginHtml) {
+        StringBuilder html = new StringBuilder();
+        Matcher matcher = RegexHelper.imgSrcPattern.matcher(orginHtml);
+        Set<String> set = imageUrls.keySet();
+        
+        int index = 0;
+        String localUri;
+        while (matcher.find()) {
+            localUri = matcher.group(1);
+            String url = "";
+            for (String imageName : set) {
+                if (StringUtils.containsIgnoreCase(localUri, imageName)) {
+                    url = imageUrls.get(imageName);
+                }
+            }
+            html.append(orginHtml, index, matcher.start(1)).append(url);
+            index = matcher.end(1);
+        }
+        html.append(orginHtml.substring(index));
+        return html.toString();
+    }
+    
+    protected String replaceWmfImgUrl(Map<String, String> wmfImageUrls, String orginHtml) {
+        String html = orginHtml;
+        for (Map.Entry<String, WmfData> entry : wmfDatas.entrySet()) {
+            String placeholder = entry.getKey();
+            String url = wmfImageUrls.get(placeholder);
+            WmfData wmfData = entry.getValue();
+            // java中的replace与replaceAll相似, 如果只替换一次使用replaceFirst方法
+            html = html.replace(entry.getKey(), createImgTag(url, wmfData.getWidth(), wmfData.getHeight(), 1.5));
+        }
+        return html;
+    }
+    
+    protected String replaceOmathImgUrl(Map<String, String> oMathImageUrls, String orginHtml) {
+        String html = orginHtml;
+        for (Map.Entry<String, OMathData> entry : oMathDatas.entrySet()) {
+            String placeholder = entry.getKey();
+            String url = oMathImageUrls.get(placeholder);
+            html = html.replace(placeholder, createImgTag(url));
+        }
+        return html;
     }
     
     private String createImgTag(String url) {

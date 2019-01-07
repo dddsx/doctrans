@@ -26,18 +26,22 @@ import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_WMF;
 
 /**
- * 提取document中用wmf公式。方法是在提取处设置CTR占位符，并将提取到元数据返回。
+ * 提取document中WMF图片公式。方法是在提取处设置CTR占位符，并收集WMF图片元数据。
  */
 public class WMFImgHandler {
     
     private XWPFDocument document;
     
+    /** placeholder map to WmfData */
     private Map<String, WmfData> wmfDatas = new HashMap<>();
     
     public WMFImgHandler(XWPFDocument document) {
         this.document = document;
     }
     
+    /**
+     * 提取document中的wmf元数据, 并设置占位符
+     */
     public Map<String, WmfData> extractWMF() {
         List<IBodyElement> bodyElements = document.getBodyElements();
         for (IBodyElement bodyElement : bodyElements) {
@@ -60,19 +64,36 @@ public class WMFImgHandler {
         return wmfDatas;
     }
     
+    /**
+     * 提取table中的wmf, 遍历每一个单元格cell
+     */
     private void extractWMFInTable(XWPFTable table) {
         List<XWPFTableRow> rows = table.getRows();
         for (XWPFTableRow row : rows) {
             List<XWPFTableCell> cells = row.getTableCells();
             for (XWPFTableCell cell : cells) {
-                List<XWPFParagraph> paragraphs = cell.getParagraphs();
-                for (XWPFParagraph paragraph : paragraphs) {
-                    extractWMFInParagraph(paragraph);
-                }
+                extractWMFInCell(cell);
             }
         }
     }
     
+    /**
+     * 提取cell中的wmf, 注意cell中可能会嵌套表格
+     */
+    private void extractWMFInCell(XWPFTableCell cell) {
+        List<XWPFTable> tables = cell.getTables();
+        for (XWPFTable table : tables) {
+            extractWMFInTable(table);
+        }
+        List<XWPFParagraph> paragraphs = cell.getParagraphs();
+        for (XWPFParagraph paragraph : paragraphs) {
+            extractWMFInParagraph(paragraph);
+        }
+    }
+    
+    /**
+     * 提取paragraph中的wmf
+     */
     private void extractWMFInParagraph(XWPFParagraph paragraph) {
         List<XWPFRun> runs = paragraph.getRuns();
         for (XWPFRun run : runs) {
@@ -80,6 +101,9 @@ public class WMFImgHandler {
         }
     }
     
+    /**
+     * 提取run中的wmf
+     */
     private void extractWMFInRun(XWPFRun run) {
         CTR ctr = run.getCTR();
         XmlCursor c = ctr.newCursor();
@@ -122,7 +146,7 @@ public class WMFImgHandler {
                                 String placeholder = PlaceholderHelper.createWMFPlaceholder(blipID);
                                 wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
                                 createWMFPlaceholder(run, placeholder);
-                                // fixme 移除<w:drawing>，避免xdocreport对图片重复处理。现假设每个<w:r>下最多只有一个<w:drawing>，
+                                // 移除<w:drawing>，避免xdocreport对图片重复处理。现假设每个<w:r>下最多只有一个<w:drawing>，
                                 // 若有特殊情况产生异常应修改remove的参数值
                                 ctr.removeDrawing(0);
                             } else {
@@ -147,6 +171,7 @@ public class WMFImgHandler {
                         String placeholder = PlaceholderHelper.createWMFPlaceholder(rId);
                         XWPFPictureData pictureData = document.getPictureDataByID(rId);
     
+                        // 解析wmf的高宽样式
                         Double[] styles = parseWMFStyle(ctShape.getStyle());
                         Double width = styles[0];
                         Double height = styles[1];
@@ -159,7 +184,9 @@ public class WMFImgHandler {
         }
     }
     
-    // 设置wmf图片占位符, 以便图片上传完成后进行替换
+    /**
+     * 设置wmf图片占位符, 以便图片上传完成后进行替换
+     */
     private void createWMFPlaceholder(XWPFRun run, String placeholder) {
         run.setText(placeholder);
     }

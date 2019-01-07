@@ -1,7 +1,7 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
-import com.zhihuishu.doctrans.support.MathMLHandler;
+import com.zhihuishu.doctrans.support.OMathHandler;
 import com.zhihuishu.doctrans.support.WMFImgHandler;
 import com.zhihuishu.doctrans.util.FileUploader;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
@@ -9,7 +9,9 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -26,14 +28,14 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     private WMFImgHandler wmfImgHandler;
     
-    private MathMLHandler mathMLHandler;
+    private OMathHandler mathMLHandler;
     
     public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
         try (InputStream in = inputStream) {
             document = new XWPFDocument(in);
         }
         this.setting = setting == null ? new ConvertSetting() : setting;
-        mathMLHandler = new MathMLHandler(document);
+        mathMLHandler = new OMathHandler(document);
         wmfImgHandler = new WMFImgHandler(document);
     }
     
@@ -42,11 +44,10 @@ public class XdocreportConverter extends AbstractDocxConverter {
         String html;
         Instant convertTime = Instant.now();
         try (StringWriter htmlWriter = new StringWriter()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("文档初始xml:" + document.getDocument().xmlText() + "\n");
-            }
+            logger.debug("文档初始xml:{}\n", document.getDocument().xmlText());
             
-            // 提取一般图片元数据
+            // 提取普通图片元数据, key为文件名, value为文件二进制数据
+            // Xdocreport会将图片转换为"<img src=".../filename" >"的形式, 将图片上传到OSS后, 将src属性值替换为OSS路径
             Map<String, byte[]> imageBytes = new HashMap<>();
             List<XWPFPictureData> pictureDatas = document.getAllPictures();
             for (XWPFPictureData pictureData : pictureDatas) {
@@ -60,25 +61,24 @@ public class XdocreportConverter extends AbstractDocxConverter {
             
             // 提取wmf和omath公式元数据, 并设置占位符
             wmfDatas = wmfImgHandler.extractWMF();
-            oMathDatas = mathMLHandler.extractMathML();
+            oMathDatas = mathMLHandler.extractOMath();
             
             int imageNum = imageBytes.size() + wmfDatas.size() + oMathDatas.size();
             if (imageNum > 1000) {
-                logger.warn("文档中包含图片过多:" + imageNum);
+                logger.warn("文档中包含过多图片:{}", imageNum);
             }
             
-            // 将公式转换为png
             Instant convertPNGTime = Instant.now();
+            // 将wmf转换为png
             Map<String, byte[]> imageBytesOfWMF = convertWMFToPNG();
-            Map<String, byte[]> imageBytesOfOMath = convertMathMLToPNG();
+            // 将omath转换为png
+            Map<String, byte[]> imageBytesOfOMath = convertOMathToPNG();
             long convertPNGUseTime = Duration.between(convertPNGTime, Instant.now()).toMillis();
-            logger.info("公式转PNG耗时:" + convertPNGUseTime + "毫秒");
+            logger.info("公式转PNG耗时:{}毫秒", convertPNGUseTime);
             
-            if (logger.isDebugEnabled()) {
-                logger.debug("抽取公式后xml:" + document.getDocument().xmlText() + "\n");
-            }
+            logger.debug("抽取公式后xml:{}\n", document.getDocument().xmlText());
             
-            // 使用Xdocreport转换为html
+            // 使用Xdocreport将document转换为html
             Instant convertHtmlTime = Instant.now();
             XHTMLOptions options = XHTMLOptions.create();
             options.setFragment(setting.isFragment());
@@ -86,18 +86,18 @@ public class XdocreportConverter extends AbstractDocxConverter {
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, htmlWriter, options);
             long convertHtmlUseTime = Duration.between(convertHtmlTime, Instant.now()).toMillis();
-            logger.info("html转换耗时:" + convertHtmlUseTime + "毫秒");
+            logger.info("html转换耗时:{}毫秒", convertHtmlUseTime);
             
             html = htmlWriter.toString();
             
             // 将图片上传到OSS
             Instant uploadImgTime = Instant.now();
-            logger.info("将" + imageNum + "张图片上传到OSS服务器");
+            logger.info("将{}张图片上传到OSS服务器", imageNum);
             Map<String, String> imageUrls = FileUploader.uploadImageToOSS(imageBytes, null, true);
             Map<String, String> wmfImageUrls = FileUploader.uploadImageToOSS(imageBytesOfWMF, FORMAT_PNG, true);
             Map<String, String> oMathImageUrls = FileUploader.uploadImageToOSS(imageBytesOfOMath, FORMAT_PNG, true);
             long uploadImgUseTime = Duration.between(uploadImgTime, Instant.now()).toMillis();
-            logger.info("上传图片耗时:" + uploadImgUseTime + "毫秒");
+            logger.info("上传图片耗时:{}毫秒", uploadImgUseTime);
             
             // 网络图片URL替换
             html = replaceImgUrl(imageUrls, html);
@@ -108,7 +108,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             html = null;
         }
         long convertUseTime = Duration.between(convertTime, Instant.now()).toMillis();
-        logger.info("文档转换总耗时:" + convertUseTime + "毫秒");
+        logger.info("文档转换总耗时:{}毫秒", convertUseTime);
         return html;
     }
 }

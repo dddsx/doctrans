@@ -1,7 +1,6 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
-import com.zhihuishu.doctrans.util.RegexHelper;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.ConversionFeatures;
@@ -14,10 +13,6 @@ import org.w3c.dom.Document;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Docx4jConverter extends AbstractDocxConverter {
     

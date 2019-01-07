@@ -2,12 +2,18 @@ package com.zhihuishu.doctrans.model;
 
 import org.w3c.dom.Node;
 
+/**
+ * omath元数据
+ */
 public class OMathData {
     
+    /** html中的占位符 */
     private String placeholder;
     
+    /** xml数据 */
     private String xmlContent;
     
+    /** xml node */
     private Node node;
     
     public OMathData(String placeholder, String xmlContent, Node node) {
