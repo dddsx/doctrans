@@ -5,7 +5,7 @@
 
     <groupId>com.zhihuishu</groupId>
     <artifactId>doctrans</artifactId>
-    <version>0.9.96</version>
+    <version>0.9.98</version>
     <packaging>jar</packaging>
     <name>doctrans</name>
     <description>the utils to deal with word</description>
@@ -159,6 +159,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
             </plugin>
         </plugins>
 

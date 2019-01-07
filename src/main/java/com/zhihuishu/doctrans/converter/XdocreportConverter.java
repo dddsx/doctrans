@@ -4,7 +4,6 @@ import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.support.MathMLHandler;
 import com.zhihuishu.doctrans.support.WMFImgHandler;
 import com.zhihuishu.doctrans.util.FileUploader;
-import com.zhihuishu.doctrans.util.RegexHelper;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -36,10 +35,6 @@ public class XdocreportConverter extends AbstractDocxConverter {
         this.setting = setting == null ? new ConvertSetting() : setting;
         mathMLHandler = new MathMLHandler(document);
         wmfImgHandler = new WMFImgHandler(document);
-    }
-    
-    public XdocreportConverter(File file, ConvertSetting setting) throws IOException {
-        this(new FileInputStream(file), setting);
     }
     
     @Override
@@ -108,7 +103,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             html = replaceImgUrl(imageUrls, html);
             html = replaceWmfImgUrl(wmfImageUrls, html);
             html = replaceOmathImgUrl(oMathImageUrls, html);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("文档转换出现异常", e);
             html = null;
         }
