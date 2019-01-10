@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.zhihuishu.doctrans.util.img.ImgConverter.SYMBOL_BOT;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.SYMBOL_POINT;
 
 public class FileUploader {
     
@@ -22,7 +22,7 @@ public class FileUploader {
     private final static AtomicInteger threadNum = new AtomicInteger(1);
     
     /** 创建固定大小为20的线程池，用来并发上传文件 */
-    private final static ExecutorService executorService = new ThreadPoolExecutor(
+    private final static ExecutorService uploadExecutor = new ThreadPoolExecutor(
             20,
             20,
             0,
@@ -56,16 +56,20 @@ public class FileUploader {
             
             // 开启上传任务
             for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
-                futures.add(executorService.submit(() -> {
-                    String imageName = entry.getKey();
-                    byte[] bytes = entry.getValue();
-                    // 将图片上传到OSS服务器, 并获得URL
-                    String url = uploadToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
-                    return Collections.singletonMap(imageName, url);
-                }));
+                futures.add(
+                    uploadExecutor.submit(
+                        () -> {
+                            String imageName = entry.getKey();
+                            byte[] bytes = entry.getValue();
+                            // 将图片上传到OSS服务器, 并获得URL
+                            String url = uploadToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
+                            return Collections.singletonMap(imageName, url);
+                        }
+                    )
+                );
             }
             
-            // 阻塞获取结果
+            // 阻塞获取上传结果
             for (Future<Map<String, String>> future : futures) {
                 try {
                     Map<String, String> singleMap = future.get();
@@ -107,15 +111,18 @@ public class FileUploader {
         return data.getString("path");
     }
     
+    /**
+     * 生成带格式后缀的UUID文件名
+     */
     private static String getRandomFilename(String originName, String format) {
         String uuid = UUIDUtils.createUUID();
         if (format != null) {
-            return uuid + SYMBOL_BOT + format;
+            return uuid + SYMBOL_POINT + format;
         }
         
-        if (originName.contains(SYMBOL_BOT)) {
-            String uploadFormat = originName.substring(originName.lastIndexOf(SYMBOL_BOT));
-            return uuid + SYMBOL_BOT + uploadFormat;
+        if (originName.contains(SYMBOL_POINT)) {
+            format = originName.substring(originName.lastIndexOf(SYMBOL_POINT));
+            return uuid + SYMBOL_POINT + format;
         }
         return uuid;
     }

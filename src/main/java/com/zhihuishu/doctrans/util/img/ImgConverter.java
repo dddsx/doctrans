@@ -19,7 +19,7 @@ public interface ImgConverter {
     
     String FORMAT_PNG = "png";
     
-    String SYMBOL_BOT = ".";
+    String SYMBOL_POINT = ".";
     
     /**
      * 将图片转换为其它格式
