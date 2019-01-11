@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 
 import static com.zhihuishu.doctrans.util.img.ImgConverter.*;
 
-public abstract class AbstractDocxConverter implements DocxConverter {
+public abstract class AbstractDocxConverter {
     
     protected final Logger logger = LoggerFactory.getLogger(AbstractDocxConverter.class);
     
@@ -30,6 +30,8 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     protected Map<String, WmfData> wmfDatas;
     
     protected Map<String, OMathData> oMathDatas;
+    
+    public abstract String convert();
     
     protected Map<String, byte[]> convertWMFToPNG() {
         Map<String, byte[]> pngBytes = new HashMap<>();
@@ -102,7 +104,7 @@ public abstract class AbstractDocxConverter implements DocxConverter {
             String url = wmfImageUrls.get(placeholder);
             WmfData wmfData = entry.getValue();
             // java中的replace与replaceAll相似, 如果只替换一次使用replaceFirst方法
-            html = html.replace(entry.getKey(), createImgTag(url, wmfData.getWidth(), wmfData.getHeight(), 1.5));
+            html = html.replace(entry.getKey(), createImgTag(url, wmfData.getWidth(), wmfData.getHeight()));
         }
         return html;
     }
@@ -118,26 +120,19 @@ public abstract class AbstractDocxConverter implements DocxConverter {
     }
     
     private String createImgTag(String url) {
-        return createImgTag(url, null, null, null);
+        return createImgTag(url, null, null);
     }
     
-    private String createImgTag(String url, Double width, Double height, Double multiple) {
+    private String createImgTag(String url, Double width, Double height) {
         if(url == null){
             url = "";
         }
-        
+    
         if(width == null || height == null){
             return "<img src=\"" + url + "\">";
         } else {
-            int widthInt;
-            int heightInt;
-            if (multiple == null) {
-                widthInt = width.intValue();
-                heightInt = height.intValue();
-            } else {
-                widthInt = new Double(width * multiple).intValue();
-                heightInt = new Double(height * multiple).intValue();
-            }
+            int widthInt = width.intValue();
+            int heightInt = height.intValue();
             return "<img src=\"" + url + "\" " +
                     "width=\"" + widthInt + "px\" " +
                     "height=\"" + heightInt + "px\">";

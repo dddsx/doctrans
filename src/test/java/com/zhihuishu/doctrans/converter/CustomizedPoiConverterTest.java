@@ -11,7 +11,7 @@ public class CustomizedPoiConverterTest extends BaseTest {
     @Test
     public void testConvert() throws IOException {
         URL fileUrl = this.getClass().getClassLoader().getResource("docx/试卷.docx");
-        DocxConverter converter = new CustomizedPoiConverter(fileUrl.openStream(), null);
+        CustomizedPoiConverter converter = new CustomizedPoiConverter(fileUrl.openStream(), null);
         System.out.println(converter.convert());
     }
 }

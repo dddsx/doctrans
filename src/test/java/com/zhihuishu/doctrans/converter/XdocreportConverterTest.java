@@ -16,7 +16,7 @@ public class XdocreportConverterTest extends BaseTest {
     public void testConvert() throws IOException {
         String docxName = "嵌套表格";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
-        DocxConverter docxConverter = new XdocreportConverter(inputStream, null);
+        XdocreportConverter docxConverter = new XdocreportConverter(inputStream, null);
         String html = docxConverter.convert();
         FileUtils.writeStringToFile(new File(rootFile,
                 "html/" + docxName + "-xdocreport.html"), html, Charset.forName("UTF-8"));

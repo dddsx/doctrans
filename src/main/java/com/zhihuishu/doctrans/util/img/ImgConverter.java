@@ -1,7 +1,5 @@
 package com.zhihuishu.doctrans.util.img;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -27,10 +25,6 @@ public interface ImgConverter {
      * @param out 输出流
      */
     void convert(InputStream in, OutputStream out, ImgConfig config) throws Exception;
-    
-    static boolean isWMFFormat(String filename) {
-        return StringUtils.endsWithIgnoreCase(filename, FORMAT_WMF);
-    }
     
     class ImgConfig {
     

@@ -2,9 +2,9 @@ package com.zhihuishu.doctrans.support;
 
 public class PlaceholderHelper {
     
-    private static final String WMF_PLACEHOLDER_PREFIX = "#{wmf:";
+    private static final String WMF_PLACEHOLDER_PREFIX = "#{";
     
-    private static final String MATHML_PLACEHOLDER_PREFIX = "#{mathml:";
+    private static final String MATHML_PLACEHOLDER_PREFIX = "#{mml-";
     
     private static final String COMMON_PLACEHOLDER_SUFFIX = "}";
     

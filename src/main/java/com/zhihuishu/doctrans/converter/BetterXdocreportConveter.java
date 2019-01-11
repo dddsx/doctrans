@@ -1,12 +1,11 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.converter.support.ConvertSetting;
-import com.zhihuishu.doctrans.model.WmfData;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClients;
+import com.zhihuishu.doctrans.http.WMFConvertRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 
 public class BetterXdocreportConveter extends XdocreportConverter {
@@ -19,13 +18,20 @@ public class BetterXdocreportConveter extends XdocreportConverter {
      * 将wmf批量上传至.net服务来转换
      */
     @Override
-    protected Map<String, byte[]> convertOMathToPNG() {
-        HttpClient httpClient = HttpClients.createDefault();
-        
-        
-        for (Map.Entry<String, WmfData> wmfData : wmfDatas.entrySet()) {
-        
+    @SuppressWarnings("unchecked")
+    protected Map<String, byte[]> convertWMFToPNG() {
+        Map<String, byte[]> pngDatas = Collections.EMPTY_MAP;
+        if (wmfDatas == null || wmfDatas.size() == 0) {
+            return pngDatas;
         }
-        return super.convertOMathToPNG();
+        
+        try {
+            pngDatas = WMFConvertRequest.uploadAndConvert(wmfDatas);
+        } catch (IOException e) {
+            logger.error("wmf转换服务响应异常", e);
+        } catch (Throwable e) {
+            logger.error("wmf转换服务出现未知异常", e);
+        }
+        return pngDatas;
     }
 }

@@ -139,18 +139,17 @@ public class WMFImgHandler {
                             
                             String blipID = picture.getBlipFill().getBlip().getEmbed();
                             XWPFPictureData pictureData = document.getPictureDataByID(blipID);
-                            
+                            String pictureName = pictureData.getFileName();
+                            int pictureStyle = pictureData.getPictureType();
+    
                             // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
-                            if (pictureData.getPictureType() == PICTURE_TYPE_EMF
-                                    || pictureData.getPictureType() == PICTURE_TYPE_WMF) {
-                                String placeholder = PlaceholderHelper.createWMFPlaceholder(blipID);
+                            if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
+                                String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
                                 wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
                                 createWMFPlaceholder(run, placeholder);
                                 // 移除<w:drawing>，避免xdocreport对图片重复处理。现假设每个<w:r>下最多只有一个<w:drawing>，
                                 // 若有特殊情况产生异常应修改remove的参数值
                                 ctr.removeDrawing(0);
-                            } else {
-                            
                             }
                         }
                     }
@@ -167,9 +166,10 @@ public class WMFImgHandler {
                     if (xmlObject instanceof CTShape) {
                         CTShape ctShape = (CTShape) xmlObject;
                         CTImageData imageData = ctShape.getImagedataArray(0);
-                        String rId = imageData.getId2();
-                        String placeholder = PlaceholderHelper.createWMFPlaceholder(rId);
-                        XWPFPictureData pictureData = document.getPictureDataByID(rId);
+                        String blipID = imageData.getId2();
+                        XWPFPictureData pictureData = document.getPictureDataByID(blipID);
+                        String pictureName = pictureData.getFileName();
+                        String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
     
                         // 解析wmf的高宽样式
                         Double[] styles = parseWMFStyle(ctShape.getStyle());
