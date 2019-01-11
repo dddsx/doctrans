@@ -40,7 +40,7 @@ public class OMathConverter {
         
         LayoutContextImpl localLayoutContextImpl = new LayoutContextImpl(LayoutContextImpl.getDefaultLayoutContext());
         // 图片fontSize, 实际也决定了最终图片的大小
-        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 26);
+        localLayoutContextImpl.setParameter(Parameter.MATHSIZE, 25);
         // 白底
         localLayoutContextImpl.setParameter(Parameter.MATHBACKGROUND, "white");
     

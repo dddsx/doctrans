@@ -14,7 +14,7 @@ public class BetterXdocreportConveterTest extends BaseTest {
     
     @Test
     public void testConvert() throws IOException {
-        String docxName = "线代";
+        String docxName = "omath错乱";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         BetterXdocreportConveter docxConverter = new BetterXdocreportConveter(inputStream, null);
         String html = docxConverter.convert();

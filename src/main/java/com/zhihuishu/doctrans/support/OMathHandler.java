@@ -99,6 +99,8 @@ public class OMathHandler {
             if (o instanceof CTOMath) {
                 CTOMath ctoMath = (CTOMath) o;
                 handleCTOMath(ctoMath, paragraph, runIndex);
+                // 将omath处理成了run表示的占位符, 所有index要加1
+                runIndex++;
             } else if (o instanceof CTOMathPara) {
                 CTOMathPara ctoMathPara = (CTOMathPara) o;
                 handleCTOMathPara(ctoMathPara, paragraph, runIndex);
