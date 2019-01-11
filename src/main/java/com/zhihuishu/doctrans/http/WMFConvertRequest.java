@@ -61,8 +61,12 @@ public class WMFConvertRequest {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
             for (Map.Entry<String, WmfData> entry : wmfDatas.entrySet()) {
                 WmfData wmfData = entry.getValue();
+                Double width = wmfData.getWidth();
+                Double height = wmfData.getHeight();
                 String filenameAndParam = getFilenameAndParam(wmfData.getPlaceholder(),
-                        wmfData.getWidth().intValue(), wmfData.getHeight().intValue());
+                        width == null ? null : width.intValue(),
+                        height == null ? null : height.intValue()
+                );
                 byte[] datas = wmfData.getBytes();
                 multipartEntityBuilder.addBinaryBody(filenameAndParam, datas, ContentType.create("image/wmf"), filenameAndParam);
             }
@@ -107,11 +111,9 @@ public class WMFConvertRequest {
     
     private static String getFilenameAndParam(String filename, Integer width, Integer height) {
         StringBuilder sb = new StringBuilder("n_" + filename);
-        if (width != null) {
-            sb.append(",w_").append(width * PNG_MUTIPLE_SIZE);
-        }
-        if (height != null) {
-            sb.append(",h_").append(height * PNG_MUTIPLE_SIZE);
+        if (width != null && height != null) {
+            sb.append(",w_").append(width * PNG_MUTIPLE_SIZE)
+                    .append(",h_").append(height * PNG_MUTIPLE_SIZE);
         }
         return sb.toString();
     }

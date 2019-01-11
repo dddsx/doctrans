@@ -5,7 +5,7 @@
 
     <groupId>com.zhihuishu</groupId>
     <artifactId>doctrans</artifactId>
-    <version>0.11.1</version>
+    <version>0.11.2</version>
     <packaging>jar</packaging>
     <name>doctrans</name>
     <description>the utils to deal with word</description>
