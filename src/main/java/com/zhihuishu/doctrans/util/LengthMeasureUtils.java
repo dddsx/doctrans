@@ -6,7 +6,13 @@ import java.math.BigInteger;
  * word中图片大小单位转换
  * 参见:http://startbigthinksmall.wordpress.com/2010/01/04/points-inches-and-emus-measuring-units-in-office-open-xml/
  */
-public class DxaUtils {
+public class LengthMeasureUtils {
+    
+    public final static String INCH_MEASURE = "in";
+    
+    public final static String PT_MEASURE = "pt";
+    
+    public final static String PX_MEASURE = "px";
     
     public static double dxa2mm(double dxa) {
         return dxa2inch(dxa) * 25.4;
@@ -38,5 +44,13 @@ public class DxaUtils {
     
     public static double dxa2inch(BigInteger dxa) {
         return dxa2points(dxa) / 72;
+    }
+    
+    public static double inch2points(double inch) {
+        return inch * 72;
+    }
+    
+    public static double pt2points(double pt) {
+        return pt * 4 / 3;
     }
 }

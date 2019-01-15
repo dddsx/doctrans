@@ -11,8 +11,8 @@ public class RegexHelper {
             "<p[\\s\\S]*?>([\\s\\S]*?)</p>");
     
     public final static Pattern widthValuePattern = Pattern.compile(
-            "[\\s\\S]*?width:(\\S*?)(px|pt)[\\s\\S]*?");
+            "[\\s\\S]*?width:(\\S*?)(px|pt|in)[\\s\\S]*?");
     
     public final static Pattern heightValuePattern = Pattern.compile(
-            "[\\s\\S]*?height:(\\S*?)(px|pt)[\\s\\S]*?");
+            "[\\s\\S]*?height:(\\S*?)(px|pt|in)[\\s\\S]*?");
 }

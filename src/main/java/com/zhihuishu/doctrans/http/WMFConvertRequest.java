@@ -111,10 +111,15 @@ public class WMFConvertRequest {
     
     private static String getFilenameAndParam(String filename, Integer width, Integer height) {
         StringBuilder sb = new StringBuilder("n_" + filename);
-        if (width != null && height != null) {
-            sb.append(",w_").append(width * PNG_MUTIPLE_SIZE)
-                    .append(",h_").append(height * PNG_MUTIPLE_SIZE);
+        
+        if (width != null) {
+            sb.append(",w_").append(width * PNG_MUTIPLE_SIZE);
         }
+        
+        if (height != null) {
+            sb.append(",h_").append(height * PNG_MUTIPLE_SIZE);
+        }
+        
         return sb.toString();
     }
 }

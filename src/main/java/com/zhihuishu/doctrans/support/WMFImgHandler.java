@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static com.zhihuishu.doctrans.util.DxaUtils.emu2points;
+import static com.zhihuishu.doctrans.util.LengthMeasureUtils.*;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_WMF;
 
@@ -32,7 +32,9 @@ public class WMFImgHandler {
     
     private XWPFDocument document;
     
-    /** placeholder map to WmfData */
+    /**
+     * placeholder map to WmfData
+     */
     private Map<String, WmfData> wmfDatas = new HashMap<>();
     
     public WMFImgHandler(XWPFDocument document) {
@@ -141,7 +143,7 @@ public class WMFImgHandler {
                             XWPFPictureData pictureData = document.getPictureDataByID(blipID);
                             String pictureName = pictureData.getFileName();
                             int pictureStyle = pictureData.getPictureType();
-    
+                            
                             // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
                             if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
                                 String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
@@ -170,7 +172,7 @@ public class WMFImgHandler {
                         XWPFPictureData pictureData = document.getPictureDataByID(blipID);
                         String pictureName = pictureData.getFileName();
                         String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
-    
+                        
                         // 解析wmf的高宽样式
                         Double[] styles = parseWMFStyle(ctShape.getStyle());
                         Double width = styles[0];
@@ -193,25 +195,50 @@ public class WMFImgHandler {
     
     private Double[] parseWMFStyle(String style) {
         Double[] styles = new Double[2];
+        Matcher matcher;
+        
+        // 解析width样式，并将单位转为px
         try {
-            Matcher matcher;
             if ((matcher = RegexHelper.widthValuePattern.matcher(style)).find()) {
-                if ("pt".equals(matcher.group(2))) {
-                    styles[0] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-                } else {
-                    styles[0] = Double.parseDouble(matcher.group(1));
-                }
-            }
-            if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
-                if ("pt".equals(matcher.group(2))) {
-                    styles[1] = Double.parseDouble(matcher.group(1)) * 4 / 3;
-                } else {
-                    styles[1] = Double.parseDouble(matcher.group(1));
-                }
+                double num = Double.parseDouble(matcher.group(1));
+                String measure = matcher.group(2);
+                styles[0] = convertToPoints(measure, num);
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
+        
+        // 解析height样式，并将单位转为px
+        try {
+            if ((matcher = RegexHelper.heightValuePattern.matcher(style)).find()) {
+                double num = Double.parseDouble(matcher.group(1));
+                String measure = matcher.group(2);
+                styles[1] = convertToPoints(measure, num);
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        
         return styles;
+    }
+    
+    private Double convertToPoints(String measure, double num) {
+        Double points;
+        switch (measure) {
+            case INCH_MEASURE:
+                // points = inch2points(num); 样式中的英寸单位不够准确，先不读这个参数
+                points = null;
+                break;
+            case PT_MEASURE:
+                points = pt2points(num);
+                break;
+            case PX_MEASURE:
+                points = num;
+                break;
+            default:
+                points = null;
+                break;
+        }
+        return points;
     }
 }

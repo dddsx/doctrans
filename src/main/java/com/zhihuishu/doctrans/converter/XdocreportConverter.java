@@ -35,8 +35,8 @@ public class XdocreportConverter extends AbstractDocxConverter {
             document = new XWPFDocument(in);
         }
         this.setting = setting == null ? new ConvertSetting() : setting;
-        mathMLHandler = new OMathHandler(document);
         wmfImgHandler = new WMFImgHandler(document);
+        mathMLHandler = new OMathHandler(document);
     }
     
     @Override
@@ -81,8 +81,10 @@ public class XdocreportConverter extends AbstractDocxConverter {
             // 使用Xdocreport将document转换为html
             Instant convertHtmlTime = Instant.now();
             XHTMLOptions options = XHTMLOptions.create();
-            options.setFragment(setting.isFragment());
-            options.setIgnoreStylesIfUnused(true);
+            options.setFragment(setting.isFragment())
+                    .setIgnoreStylesIfUnused(true);
+                    // .indent(4); 不要设置, 就是个坑
+            
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, htmlWriter, options);
             long convertHtmlUseTime = Duration.between(convertHtmlTime, Instant.now()).toMillis();

@@ -127,15 +127,17 @@ public abstract class AbstractDocxConverter {
         if(url == null){
             url = "";
         }
-    
-        if(width == null || height == null){
-            return "<img src=\"" + url + "\">";
-        } else {
-            int widthInt = width.intValue();
-            int heightInt = height.intValue();
-            return "<img src=\"" + url + "\" " +
-                    "width=\"" + widthInt + "px\" " +
-                    "height=\"" + heightInt + "px\">";
+        
+        String sizeAttributes = "";
+        
+        if (width != null) {
+            sizeAttributes += " width=\"" + width.intValue() + "px\"";
         }
+        
+        if (height != null) {
+            sizeAttributes += " height=\"" + height.intValue() + "px\"";
+        }
+        
+        return "<img src=\"" + url + "\"" + sizeAttributes + ">";
     }
 }
