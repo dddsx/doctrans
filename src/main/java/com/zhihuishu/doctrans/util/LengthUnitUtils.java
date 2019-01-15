@@ -6,13 +6,13 @@ import java.math.BigInteger;
  * word中图片大小单位转换
  * 参见:http://startbigthinksmall.wordpress.com/2010/01/04/points-inches-and-emus-measuring-units-in-office-open-xml/
  */
-public class LengthMeasureUtils {
+public class LengthUnitUtils {
     
-    public final static String INCH_MEASURE = "in";
+    public final static String INCH_UNIT = "in";
     
-    public final static String PT_MEASURE = "pt";
+    public final static String PT_UNIT = "pt";
     
-    public final static String PX_MEASURE = "px";
+    public final static String PX_UNIT = "px";
     
     public static double dxa2mm(double dxa) {
         return dxa2inch(dxa) * 25.4;

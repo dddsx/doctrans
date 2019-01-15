@@ -30,7 +30,7 @@ public class WMFConvertRequest {
     
     private final static int DEFAULT_BUFFER_SIZE = 4096;
     
-    /** 转换的png放大倍数 */
+    /** png放大倍数，研究表明原图越大，用样式控制缩小后得到的图片越清晰 */
     private final static int PNG_MUTIPLE_SIZE = 4;
     
     /** 预计http连接耗时5s */

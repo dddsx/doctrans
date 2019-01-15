@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static com.zhihuishu.doctrans.util.LengthMeasureUtils.*;
+import static com.zhihuishu.doctrans.util.LengthUnitUtils.*;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_WMF;
 
@@ -163,27 +163,43 @@ public class WMFImgHandler {
                 w.selectPath("./*");
                 while (w.toNextSelection()) {
                     XmlObject xmlObject = w.getObject();
-                    
                     // <v:shape>, 里面一般都是wmf格式图片
                     if (xmlObject instanceof CTShape) {
-                        CTShape ctShape = (CTShape) xmlObject;
-                        CTImageData imageData = ctShape.getImagedataArray(0);
-                        String blipID = imageData.getId2();
-                        XWPFPictureData pictureData = document.getPictureDataByID(blipID);
-                        String pictureName = pictureData.getFileName();
-                        String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
-                        
-                        // 解析wmf的高宽样式
-                        Double[] styles = parseWMFStyle(ctShape.getStyle());
-                        Double width = styles[0];
-                        Double height = styles[1];
-                        
-                        wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
-                        createWMFPlaceholder(run, placeholder);
+                        parseWMFFromCTShape((CTShape) xmlObject, run);
+                    }
+                }
+            } else if (o instanceof org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) {
+                // <w:pict>类型处理
+                org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture pict =
+                        (org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) o;
+                XmlCursor w = pict.newCursor();
+                w.selectPath("./*");
+                while (w.toNextSelection()) {
+                    XmlObject xmlObject = w.getObject();
+                    // <v:shape>, 里面一般都是wmf格式图片
+                    if (xmlObject instanceof CTShape) {
+                        parseWMFFromCTShape((CTShape) xmlObject, run);
                     }
                 }
             }
         }
+    }
+    
+    // 从<v:shape>中提取wmf图片数据，并设置占位符
+    private void parseWMFFromCTShape(CTShape ctShape, XWPFRun run) {
+        CTImageData imageData = ctShape.getImagedataArray(0);
+        String blipID = imageData.getId2();
+        XWPFPictureData pictureData = document.getPictureDataByID(blipID);
+        String pictureName = pictureData.getFileName();
+        String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
+    
+        // 解析wmf的高宽样式
+        Double[] styles = parseWMFStyle(ctShape.getStyle());
+        Double width = styles[0];
+        Double height = styles[1];
+    
+        wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
+        createWMFPlaceholder(run, placeholder);
     }
     
     /**
@@ -225,14 +241,14 @@ public class WMFImgHandler {
     private Double convertToPoints(String measure, double num) {
         Double points;
         switch (measure) {
-            case INCH_MEASURE:
+            case INCH_UNIT:
                 // points = inch2points(num); 样式中的英寸单位不够准确，先不读这个参数
                 points = null;
                 break;
-            case PT_MEASURE:
+            case PT_UNIT:
                 points = pt2points(num);
                 break;
-            case PX_MEASURE:
+            case PX_UNIT:
                 points = num;
                 break;
             default:
