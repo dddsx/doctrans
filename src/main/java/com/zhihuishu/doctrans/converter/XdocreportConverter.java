@@ -44,8 +44,6 @@ public class XdocreportConverter extends AbstractDocxConverter {
         String html;
         Instant convertTime = Instant.now();
         try (StringWriter htmlWriter = new StringWriter()) {
-            logger.debug("文档初始xml:{}\n", document.getDocument().xmlText());
-            
             // 提取普通图片元数据, key为文件名, value为文件二进制数据
             // Xdocreport会将图片转换为"<img src=".../filename" >"的形式, 将图片上传到OSS后, 将src属性值替换为OSS路径
             Map<String, byte[]> imageBytes = new HashMap<>();
@@ -76,7 +74,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             long convertPNGUseTime = Duration.between(convertPNGTime, Instant.now()).toMillis();
             logger.info("公式转PNG耗时:{}毫秒", convertPNGUseTime);
             
-            logger.debug("抽取公式后xml:{}\n", document.getDocument().xmlText());
+            // logger.debug("抽取公式后xml:{}\n", document.getDocument().xmlText()); 需要遍历document，建议不使用
             
             // 使用Xdocreport将document转换为html
             Instant convertHtmlTime = Instant.now();

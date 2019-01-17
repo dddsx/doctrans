@@ -370,7 +370,14 @@ public class WMFImgHandler {
      * 从<v:shape>中提取wmf图片数据，并设置占位符
      */
     private void visitCTSharp(CTShape ctShape, XWPFRun run) {
-        CTImageData imageData = ctShape.getImagedataArray(0);
+        List<CTImageData> imageDatas = ctShape.getImagedataList();
+        if (imageDatas == null || imageDatas.size() == 0) {
+            return;
+        }
+        
+        // 假设<v:shape>中只含一个<v:imagedata>
+        CTImageData imageData = imageDatas.get(0);
+        
         String blipID = imageData.getId2();
         XWPFPictureData pictureData = document.getPictureDataByID(blipID);
         int pictureStyle = pictureData.getPictureType();
