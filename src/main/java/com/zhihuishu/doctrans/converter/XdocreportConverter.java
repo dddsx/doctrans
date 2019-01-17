@@ -1,6 +1,7 @@
 package com.zhihuishu.doctrans.converter;
 
-import com.zhihuishu.doctrans.converter.support.ConvertSetting;
+import com.zhihuishu.doctrans.model.PuzzleRecord;
+import com.zhihuishu.doctrans.support.CustomizedVisitor;
 import com.zhihuishu.doctrans.support.OMathHandler;
 import com.zhihuishu.doctrans.support.WMFImgHandler;
 import com.zhihuishu.doctrans.util.FileUploader;
@@ -30,6 +31,8 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     private OMathHandler mathMLHandler;
     
+    private CustomizedVisitor customizedVisitor;
+    
     public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
         try (InputStream in = inputStream) {
             document = new XWPFDocument(in);
@@ -37,6 +40,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
         this.setting = setting == null ? new ConvertSetting() : setting;
         wmfImgHandler = new WMFImgHandler(document);
         mathMLHandler = new OMathHandler(document);
+        customizedVisitor = new CustomizedVisitor(document);
     }
     
     @Override
@@ -56,7 +60,13 @@ public class XdocreportConverter extends AbstractDocxConverter {
                     imageBytes.put(pictureData.getFileName(), pictureData.getData());
                 }
             }
-            
+    
+            try {
+                List<PuzzleRecord> puzzleRecords = customizedVisitor.visit();
+            } catch (Exception e) {
+                logger.error("自定义预处理document时出现异常", e);
+            }
+    
             // 提取wmf和omath公式元数据, 并设置占位符
             wmfDatas = wmfImgHandler.extractWMF();
             oMathDatas = mathMLHandler.extractOMath();
@@ -74,7 +84,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             long convertPNGUseTime = Duration.between(convertPNGTime, Instant.now()).toMillis();
             logger.info("公式转PNG耗时:{}毫秒", convertPNGUseTime);
             
-            // logger.debug("抽取公式后xml:{}\n", document.getDocument().xmlText()); 需要遍历document，建议不使用
+            // logger.debug("抽取公式后xml:{}\n", document.getDocument().xmlText()); // 需要遍历document，建议不使用
             
             // 使用Xdocreport将document转换为html
             Instant convertHtmlTime = Instant.now();

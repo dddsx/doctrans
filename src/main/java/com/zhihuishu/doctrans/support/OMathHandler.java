@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 提取document中用omath表示的公式。方法是在提取处设置CTR占位符，并收集omath元数据。
+ * 遍历document, 提取用omath表示的公式。方法是在提取处设置CTR占位符，并收集omath元数据。
  */
 public class OMathHandler {
     
@@ -120,7 +120,12 @@ public class OMathHandler {
         OMathData mathMLData = new OMathData(placeholder, ctoMath.xmlText(), ctoMath.getDomNode());
         oMathDatas.put(placeholder, mathMLData);
         // 将"<m:oMath>...</>"删除
-        ctoMath.newCursor().removeXml();
+        XmlCursor c = ctoMath.newCursor();
+        try {
+            c.removeXml();
+        } catch (Exception e) {
+            c.dispose();
+        }
         this.setPlaceholder(paragraph, runIndex, placeholder);
     }
     

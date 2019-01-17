@@ -121,7 +121,7 @@ public class FileUploader {
         }
         
         if (originName.contains(SYMBOL_POINT)) {
-            format = originName.substring(originName.lastIndexOf(SYMBOL_POINT));
+            format = originName.substring(originName.lastIndexOf(SYMBOL_POINT) - 1);
             return uuid + SYMBOL_POINT + format;
         }
         return uuid;

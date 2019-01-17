@@ -1,6 +1,5 @@
 package com.zhihuishu.doctrans.converter;
 
-import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.ConversionFeatures;

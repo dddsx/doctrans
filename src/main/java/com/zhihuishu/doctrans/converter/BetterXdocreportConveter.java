@@ -1,6 +1,5 @@
 package com.zhihuishu.doctrans.converter;
 
-import com.zhihuishu.doctrans.converter.support.ConvertSetting;
 import com.zhihuishu.doctrans.http.WMFConvertRequest;
 
 import java.io.IOException;

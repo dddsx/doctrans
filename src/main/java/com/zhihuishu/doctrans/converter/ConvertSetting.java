@@ -1,4 +1,4 @@
-package com.zhihuishu.doctrans.converter.support;
+package com.zhihuishu.doctrans.converter;
 
 public class ConvertSetting {
     

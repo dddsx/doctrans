@@ -29,8 +29,9 @@ import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_EMF;
 import static org.apache.poi.xwpf.usermodel.Document.PICTURE_TYPE_WMF;
 
 /**
- * 提取document中WMF图片公式。方法是在提取处设置CTR占位符，并收集WMF图片元数据，普通图片则交由xdocreport进行默认处理。
+ * 遍历document，提取WMF图片公式。方法是在提取处设置CTR占位符，并收集WMF图片元数据，普通图片则交由xdocreport进行默认处理。
  * 图片的表示方式有多种，以下列出所有已知情况(只写出重要元素):
+ *
  * 1.w:drawing方式
  *
  *     1.1 wp:anchor方式
