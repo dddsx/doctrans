@@ -187,38 +187,51 @@ public class WMFImgHandler {
         CTR ctr = run.getCTR();
         
         XmlCursor c = ctr.newCursor();
-        c.selectPath("./*");
-        while (c.toNextSelection()) {
-            XmlObject o = c.getObject();
-            if (o instanceof CTDrawing) {
-                visitCTDrawing((CTDrawing) o, run);
-            } else if (o instanceof CTObject) {
-                // <w:object>类型处理
-                CTObject object = (CTObject) o;
-                XmlCursor w = object.newCursor();
-                w.selectPath("./*");
-                while (w.toNextSelection()) {
-                    XmlObject xmlObject = w.getObject();
-                    // <v:shape>, 里面一般都是wmf格式图片
-                    if (xmlObject instanceof CTShape) {
-                        visitCTSharp((CTShape) xmlObject, run);
+        try {
+            c.selectPath("./*");
+            while (c.toNextSelection()) {
+                XmlObject o = c.getObject();
+                if (o instanceof CTDrawing) {
+                    visitCTDrawing((CTDrawing) o, run);
+                } else if (o instanceof CTObject) {
+                    // <w:object>类型处理
+                    CTObject object = (CTObject) o;
+                    XmlCursor w = object.newCursor();
+                    try {
+                        w.selectPath("./*");
+                        while (w.toNextSelection()) {
+                            XmlObject xmlObject = w.getObject();
+                            // <v:shape>, 里面一般都是wmf格式图片
+                            if (xmlObject instanceof CTShape) {
+                                visitCTSharp((CTShape) xmlObject, run);
+                            }
+                        }
+                    } finally {
+                        w.dispose();
                     }
-                }
-                
-            } else if (o instanceof org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) {
-                // <w:pict>类型处理
-                org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture pict =
-                        (org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) o;
-                XmlCursor w = pict.newCursor();
-                w.selectPath("./*");
-                while (w.toNextSelection()) {
-                    XmlObject xmlObject = w.getObject();
-                    // <v:shape>, 里面一般都是wmf格式图片
-                    if (xmlObject instanceof CTShape) {
-                        visitCTSharp((CTShape) xmlObject, run);
+    
+                } else if (o instanceof org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) {
+                    // <w:pict>类型处理
+                    org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture pict =
+                            (org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPicture) o;
+                    XmlCursor w = pict.newCursor();
+                    try {
+                        w.selectPath("./*");
+                        while (w.toNextSelection()) {
+                            XmlObject xmlObject = w.getObject();
+                            // <v:shape>, 里面一般都是wmf格式图片
+                            if (xmlObject instanceof CTShape) {
+                                visitCTSharp((CTShape) xmlObject, run);
+                            }
+                        }
+                    } finally {
+                        w.dispose();
                     }
                 }
             }
+        } finally {
+            // 必须显式关闭游标资源，该问题曾经导致过死循环!
+            c.dispose();
         }
     }
     
@@ -254,34 +267,49 @@ public class WMFImgHandler {
     
         // <a:graphic>
         CTGraphicalObject graphicalObject = ctInline.getGraphic();
+        if (graphicalObject == null) {
+            return false;
+        }
     
         // <a:graphicData>
         CTGraphicalObjectData graphicData = graphicalObject.getGraphicData();
+        if (graphicData == null) {
+            return false;
+        }
+        
         XmlCursor cursor = graphicData.newCursor();
-        cursor.selectPath("./*");
-        while (cursor.toNextSelection()) {
-            XmlObject xmlObject = cursor.getObject();
-            // <pic:pic>
-            if (xmlObject instanceof CTPicture) {
-                CTPicture picture = (CTPicture) xmlObject;
-                // <a:ext>, 内含图片的高度宽度参数
-                CTPositiveSize2D ext = picture.getSpPr().getXfrm().getExt();
-                double width = emu2points(ext.getCx());
-                double height = emu2points(ext.getCy());
-            
-                String blipID = picture.getBlipFill().getBlip().getEmbed();
-                XWPFPictureData pictureData = document.getPictureDataByID(blipID);
-                String pictureName = pictureData.getFileName();
-                int pictureStyle = pictureData.getPictureType();
-            
-                // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
-                if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
-                    String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
-                    wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
-                    setWMFPlaceholder(run, placeholder);
-                    return true;
+        try {
+            cursor.selectPath("./*");
+            while (cursor.toNextSelection()) {
+                XmlObject xmlObject = cursor.getObject();
+                // <pic:pic>
+                if (xmlObject instanceof CTPicture) {
+                    CTPicture picture = (CTPicture) xmlObject;
+                    // <a:ext>, 内含图片的高度宽度参数
+                    CTPositiveSize2D ext = picture.getSpPr().getXfrm().getExt();
+                    double width = emu2points(ext.getCx());
+                    double height = emu2points(ext.getCy());
+                
+                    String blipID = picture.getBlipFill().getBlip().getEmbed();
+                    XWPFPictureData pictureData = document.getPictureDataByID(blipID);
+                    if (pictureData == null) {
+                        return false;
+                    }
+                    
+                    String pictureName = pictureData.getFileName();
+                    int pictureStyle = pictureData.getPictureType();
+                
+                    // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
+                    if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
+                        String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
+                        wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
+                        setWMFPlaceholder(run, placeholder);
+                        return true;
+                    }
                 }
             }
+        } finally {
+            cursor.dispose();
         }
         return false;
     }
@@ -292,33 +320,48 @@ public class WMFImgHandler {
      */
     private boolean visitAnchor(CTAnchor anchor, XWPFRun run) {
         CTGraphicalObject graphic = anchor.getGraphic();
+        if (graphic == null) {
+            return false;
+        }
+        
         CTGraphicalObjectData graphicData = graphic.getGraphicData();
+        if (graphicData == null) {
+            return false;
+        }
         
         XmlCursor cursor = graphicData.newCursor();
-        cursor.selectPath( "./*" );
-        while (cursor.toNextSelection()) {
-            XmlObject xmlObject = cursor.getObject();
-            // <pic:pic>
-            if (xmlObject instanceof CTPicture) {
-                CTPicture picture = (CTPicture) xmlObject;
-                // <a:ext>, 内含图片的高度宽度参数
-                CTPositiveSize2D ext = picture.getSpPr().getXfrm().getExt();
-                double width = emu2points(ext.getCx());
-                double height = emu2points(ext.getCy());
-            
-                String blipID = picture.getBlipFill().getBlip().getEmbed();
-                XWPFPictureData pictureData = document.getPictureDataByID(blipID);
-                String pictureName = pictureData.getFileName();
-                int pictureStyle = pictureData.getPictureType();
-            
-                // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
-                if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
-                    String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
-                    wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
-                    setWMFPlaceholder(run, placeholder);
-                    return true;
+        try {
+            cursor.selectPath( "./*" );
+            while (cursor.toNextSelection()) {
+                XmlObject xmlObject = cursor.getObject();
+                // <pic:pic>
+                if (xmlObject instanceof CTPicture) {
+                    CTPicture picture = (CTPicture) xmlObject;
+                    // <a:ext>, 内含图片的高度宽度参数
+                    CTPositiveSize2D ext = picture.getSpPr().getXfrm().getExt();
+                    double width = emu2points(ext.getCx());
+                    double height = emu2points(ext.getCy());
+                
+                    String blipID = picture.getBlipFill().getBlip().getEmbed();
+                    XWPFPictureData pictureData = document.getPictureDataByID(blipID);
+                    if (pictureData == null) {
+                        return false;
+                    }
+                    
+                    String pictureName = pictureData.getFileName();
+                    int pictureStyle = pictureData.getPictureType();
+                
+                    // 只处理wmf格式的图片, 其它格式的图片交由xdocreport进行默认处理
+                    if (pictureStyle == PICTURE_TYPE_EMF || pictureStyle == PICTURE_TYPE_WMF) {
+                        String placeholder = PlaceholderHelper.createWMFPlaceholder(pictureName);
+                        wmfDatas.put(placeholder, new WmfData(placeholder, pictureData.getData(), width, height));
+                        setWMFPlaceholder(run, placeholder);
+                        return true;
+                    }
                 }
             }
+        } finally {
+            cursor.dispose();
         }
         return false;
     }

@@ -90,21 +90,25 @@ public class OMathHandler {
         int runIndex = 0;
         CTP ctp = paragraph.getCTP();
         XmlCursor c = ctp.newCursor();
-        c.selectPath("./*");
-        while (c.toNextSelection()) {
-            XmlObject o = c.getObject();
-            if (o instanceof CTR) {
-                runIndex++;
+        try {
+            c.selectPath("./*");
+            while (c.toNextSelection()) {
+                XmlObject o = c.getObject();
+                if (o instanceof CTR) {
+                    runIndex++;
+                }
+                if (o instanceof CTOMath) {
+                    CTOMath ctoMath = (CTOMath) o;
+                    handleCTOMath(ctoMath, paragraph, runIndex);
+                    // 将omath处理成了run表示的占位符, 所有index要加1
+                    runIndex++;
+                } else if (o instanceof CTOMathPara) {
+                    CTOMathPara ctoMathPara = (CTOMathPara) o;
+                    handleCTOMathPara(ctoMathPara, paragraph, runIndex);
+                }
             }
-            if (o instanceof CTOMath) {
-                CTOMath ctoMath = (CTOMath) o;
-                handleCTOMath(ctoMath, paragraph, runIndex);
-                // 将omath处理成了run表示的占位符, 所有index要加1
-                runIndex++;
-            } else if (o instanceof CTOMathPara) {
-                CTOMathPara ctoMathPara = (CTOMathPara) o;
-                handleCTOMathPara(ctoMathPara, paragraph, runIndex);
-            }
+        } finally {
+            c.dispose();
         }
     }
     
@@ -131,7 +135,12 @@ public class OMathHandler {
             this.setPlaceholder(paragraph, runIndex, placeholder);
         }
         // 将"<m:oMathPara>...</>"整段删除
-        ctoMathPara.newCursor().removeXml();
+        XmlCursor c = ctoMathPara.newCursor();
+        try {
+            c.removeXml();
+        } catch (Exception e) {
+            c.dispose();
+        }
     }
     
     private void setPlaceholder(XWPFParagraph paragraph, int runIndex, String placeholder) {
