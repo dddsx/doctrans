@@ -6,6 +6,7 @@ import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSmartTagRun;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSym;
 
 import java.nio.charset.Charset;
@@ -53,27 +54,36 @@ public class CustomizedVisitor {
     }
     
     private void visitParagraphBody(XWPFParagraph paragraph) {
-        List<XWPFRun> runs = paragraph.getRuns();
-        if (runs.isEmpty()) {
-        
-        } else {
-            visitRuns(paragraph);
-        }
-    }
-    
-    private void visitRuns(XWPFParagraph paragraph) {
         CTP ctp = paragraph.getCTP();
         XmlCursor c = ctp.newCursor();
         try {
             c.selectPath("child::*");
+            int runIndex = 0;
             while (c.toNextSelection()) {
                 XmlObject o = c.getObject();
                 if (o instanceof CTR) {
                     CTR r = (CTR) o;
-                    XWPFRun run = new XWPFRun( r, (IRunBody) paragraph );
+                    XWPFRun run = new XWPFRun(r, (IRunBody) paragraph);
                     visitRun(run);
-                } else {
-                
+                    runIndex++;
+                } else if (o instanceof CTSmartTagRun) {
+                    // xdocreport不对<w:smartTag>进行解析, 所以将里面的文本抽取出来, 新建一个run
+                    CTSmartTagRun str = (CTSmartTagRun) o;
+                    XmlObject[] objects = str.selectPath("declare namespace " +
+                            "w='http://schemas.openxmlformats.org/wordprocessingml/2006/main' ./w:r");
+                    if (objects.length == 1) {
+                        CTR ctr = (CTR) objects[0];
+                        String text = new XWPFRun(ctr, (IRunBody) paragraph).toString();
+    
+                        // 将<w:smartTag>删除
+                        // XmlCursor w = str.newCursor();
+                        // w.removeXml();
+                        // w.dispose();
+                        
+                        XWPFRun newRun = paragraph.insertNewRun(runIndex);
+                        newRun.setText(text);
+                        runIndex++;
+                    }
                 }
             }
         } finally {
@@ -85,16 +95,17 @@ public class CustomizedVisitor {
         CTR ctr = run.getCTR();
         XmlCursor c = ctr.newCursor();
         try {
-            c.selectPath( "./*" );
+            c.selectPath("./*");
             while (c.toNextSelection()) {
                 XmlObject o = c.getObject();
                 // 将<w:sym>转换成传统的<w:t>形式
                 if (o instanceof CTSym) {
                     CTSym ctSym = (CTSym) o;
                     byte[] bytes = ctSym.getChar();
+                    String font = ctSym.getFont();
                     String aChar = new String(bytes, Charset.forName("unicode"));
                     run.setText(aChar);
-                    c.removeXml();
+                    // c.removeXml();
                 }
             }
         } finally {
