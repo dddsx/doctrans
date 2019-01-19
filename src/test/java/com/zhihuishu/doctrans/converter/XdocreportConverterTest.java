@@ -6,14 +6,13 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class XdocreportConverterTest extends BaseTest {
     
     @Test
-    public void testConvert() throws IOException {
+    public void testConvert() throws Exception {
         String docxName = "嵌套表格";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         XdocreportConverter docxConverter = new XdocreportConverter(inputStream, null);

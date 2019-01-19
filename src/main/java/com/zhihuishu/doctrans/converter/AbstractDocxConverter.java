@@ -30,7 +30,7 @@ public abstract class AbstractDocxConverter {
     
     protected Map<String, OMathData> oMathDatas;
     
-    public abstract String convert();
+    public abstract String convert() throws Exception;
     
     protected Map<String, byte[]> convertWMFToPNG() {
         Map<String, byte[]> pngBytes = new HashMap<>();

@@ -10,7 +10,6 @@ import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -33,9 +32,11 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     private CustomizedVisitor customizedVisitor;
     
-    public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws IOException {
+    public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws Exception {
         try (InputStream in = inputStream) {
             document = new XWPFDocument(in);
+        } catch (Exception e) {
+            throw new Exception("文件不符合标准docx格式要求");
         }
         this.setting = setting == null ? new ConvertSetting() : setting;
         wmfImgHandler = new WMFImgHandler(document);
@@ -44,7 +45,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
     }
     
     @Override
-    public String convert() {
+    public String convert() throws Exception {
         String html;
         Instant convertTime = Instant.now();
         try (StringWriter htmlWriter = new StringWriter()) {
@@ -113,12 +114,17 @@ public class XdocreportConverter extends AbstractDocxConverter {
             html = replaceImgUrl(imageUrls, html);
             html = replaceWmfImgUrl(wmfImageUrls, html);
             html = replaceOmathImgUrl(oMathImageUrls, html);
+            
+            html = postProcessHtml(html);
         } catch (Throwable e) {
-            logger.error("文档转换出现异常", e);
-            html = null;
+            throw new Exception("文档转换出现异常", e);
         }
         long convertUseTime = Duration.between(convertTime, Instant.now()).toMillis();
         logger.info("文档转换总耗时:{}毫秒", convertUseTime);
+        return html;
+    }
+    
+    protected String postProcessHtml(String html) {
         return html;
     }
 }

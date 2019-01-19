@@ -6,15 +6,14 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class BetterXdocreportConveterTest extends BaseTest {
     
     @Test
-    public void testConvert() throws IOException {
-        String docxName = "大学数学A上";
+    public void testConvert() throws Exception {
+        String docxName = "物理化学";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         BetterXdocreportConveter docxConverter = new BetterXdocreportConveter(inputStream, null);
         String html = docxConverter.convert();

@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class BetterXdocreportConveter extends XdocreportConverter {
     
-    public BetterXdocreportConveter(InputStream inputStream, ConvertSetting setting) throws IOException {
+    public BetterXdocreportConveter(InputStream inputStream, ConvertSetting setting) throws Exception {
         super(inputStream, setting);
     }
     
