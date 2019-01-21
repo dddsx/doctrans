@@ -13,6 +13,7 @@ import org.apache.poi.xwpf.usermodel.XWPFPictureData;
 
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class XdocreportConverter extends AbstractDocxConverter {
     
     private CustomizedVisitor customizedVisitor;
     
+    private List<UnknownElement> unknownElements;
+    
     public XdocreportConverter(InputStream inputStream, ConvertSetting setting) throws Exception {
         try (InputStream in = inputStream) {
             document = new XWPFDocument(in);
@@ -38,9 +41,10 @@ public class XdocreportConverter extends AbstractDocxConverter {
             throw new Exception("文件不符合标准docx格式要求");
         }
         this.setting = setting == null ? new ConvertSetting() : setting;
-        wmfImgHandler = new WMFImgHandler(document);
+        unknownElements = new ArrayList<>();
+        wmfImgHandler = new WMFImgHandler(document, unknownElements);
         mathMLHandler = new OMathHandler(document);
-        customizedVisitor = new CustomizedVisitor(document);
+        customizedVisitor = new CustomizedVisitor(document, unknownElements);
     }
     
     @Override
@@ -62,8 +66,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             }
     
             try {
-                List<UnknownElement> unknownElements = customizedVisitor.visit();
-                resultWrapper.setUnknownElements(unknownElements);
+                customizedVisitor.visit();
             } catch (Exception e) {
                 logger.error("自定义预处理document时出现异常", e);
             }
@@ -107,6 +110,7 @@ public class XdocreportConverter extends AbstractDocxConverter {
             
             html = postProcessHtml(html);
             resultWrapper.setHtml(html);
+            resultWrapper.setUnknownElements(unknownElements);
             resultWrapper.setSuccessful(true);
         } catch (Throwable e) {
             logger.error("文档转换出现异常", e);

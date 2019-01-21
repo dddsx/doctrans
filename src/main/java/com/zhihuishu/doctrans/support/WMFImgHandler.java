@@ -1,7 +1,9 @@
 package com.zhihuishu.doctrans.support;
 
+import com.microsoft.schemas.vml.CTGroup;
 import com.microsoft.schemas.vml.CTImageData;
 import com.microsoft.schemas.vml.CTShape;
+import com.zhihuishu.doctrans.model.UnknownElement;
 import com.zhihuishu.doctrans.model.WmfData;
 import com.zhihuishu.doctrans.util.RegexHelper;
 import org.apache.poi.xwpf.usermodel.*;
@@ -111,8 +113,11 @@ public class WMFImgHandler {
      */
     private Map<String, WmfData> wmfDatas = new HashMap<>();
     
-    public WMFImgHandler(XWPFDocument document) {
+    private List<UnknownElement> unknownElements;
+    
+    public WMFImgHandler(XWPFDocument document, List<UnknownElement> unknownElements) {
         this.document = document;
+        this.unknownElements = unknownElements;
     }
     
     /**
@@ -223,6 +228,14 @@ public class WMFImgHandler {
                             // <v:shape>, 里面一般都是wmf格式图片
                             if (xmlObject instanceof CTShape) {
                                 visitCTSharp((CTShape) xmlObject, run);
+                            } else if (xmlObject instanceof CTGroup) {
+                                // 不能识别<v:group>
+                                UnknownElement ue = new UnknownElement();
+                                CTGroup ctGroup = (CTGroup) xmlObject;
+                                ue.setNode(ctGroup.getDomNode());
+                                ue.setNodeName(ctGroup.getDomNode().getNodeName());
+                                ue.setNodeName("常见于绘图工具");
+                                unknownElements.add(ue);
                             }
                         }
                     } finally {

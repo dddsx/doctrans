@@ -11,7 +11,6 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSym;
 import org.w3c.dom.Node;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,12 +22,12 @@ public class CustomizedVisitor {
     
     private List<UnknownElement> unknownElements;
     
-    public CustomizedVisitor(XWPFDocument document) {
+    public CustomizedVisitor(XWPFDocument document, List<UnknownElement> unknownElements) {
         this.document = document;
-        this.unknownElements = new ArrayList<>();
+        this.unknownElements = unknownElements;
     }
     
-    public List<UnknownElement> visit() {
+    public void visit() {
         List<IBodyElement> bodyElements = document.getBodyElements();
         for (IBodyElement bodyElement : bodyElements) {
             switch (bodyElement.getElementType()) {
@@ -47,7 +46,6 @@ public class CustomizedVisitor {
                     break;
             }
         }
-        return unknownElements;
     }
     
     private void visitParagraph(XWPFParagraph paragraph) {
