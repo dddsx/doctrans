@@ -1,6 +1,6 @@
 package com.zhihuishu.doctrans.support;
 
-import com.zhihuishu.doctrans.model.PuzzleRecord;
+import com.zhihuishu.doctrans.model.UnknownElement;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
@@ -8,6 +8,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSmartTagRun;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSym;
+import org.w3c.dom.Node;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -20,14 +21,14 @@ public class CustomizedVisitor {
     
     private XWPFDocument document;
     
-    private List<PuzzleRecord> puzzleRecords;
+    private List<UnknownElement> unknownElements;
     
     public CustomizedVisitor(XWPFDocument document) {
         this.document = document;
-        this.puzzleRecords = new ArrayList<>();
+        this.unknownElements = new ArrayList<>();
     }
     
-    public List<PuzzleRecord> visit() {
+    public List<UnknownElement> visit() {
         List<IBodyElement> bodyElements = document.getBodyElements();
         for (IBodyElement bodyElement : bodyElements) {
             switch (bodyElement.getElementType()) {
@@ -46,7 +47,7 @@ public class CustomizedVisitor {
                     break;
             }
         }
-        return puzzleRecords;
+        return unknownElements;
     }
     
     private void visitParagraph(XWPFParagraph paragraph) {
@@ -110,6 +111,22 @@ public class CustomizedVisitor {
             }
         } finally {
             c.dispose();
+        }
+        
+        // 检查是否包含<mc:AlternateContent>不能解析的元素
+        try {
+            XmlObject[] xmlObjects = ctr.selectPath("declare namespace " +
+                    "mc='http://schemas.openxmlformats.org/markup-compatibility/2006' ./mc:AlternateContent");
+            for (XmlObject xmlObject : xmlObjects) {
+                UnknownElement ue = new UnknownElement();
+                Node node = xmlObject.getDomNode();
+                ue.setNode(node);
+                ue.setNodeName(node.getNodeName());
+                ue.setDescribe("该元素常代表绘图工具绘制的图形");
+                unknownElements.add(ue);
+            }
+        } catch (Throwable e) {
+            // ignore
         }
     }
     

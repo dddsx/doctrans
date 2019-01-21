@@ -1,5 +1,6 @@
 package com.zhihuishu.doctrans.converter;
 
+import com.zhihuishu.doctrans.model.ConvertResult;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.ConversionFeatures;
@@ -29,7 +30,8 @@ public class Docx4jConverter extends AbstractDocxConverter {
     }
     
     @Override
-    public String convert() {
+    public ConvertResult convert() {
+        ConvertResult resultWrapper = new ConvertResult();
         try {
             HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
             htmlSettings.setWmlPackage(wordMLPackage);
@@ -42,10 +44,10 @@ public class Docx4jConverter extends AbstractDocxConverter {
             Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
             
             String html = os.toString("UTF-8");
-            return html;
+            resultWrapper.setHtml(html);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "";
+        return resultWrapper;
     }
 }

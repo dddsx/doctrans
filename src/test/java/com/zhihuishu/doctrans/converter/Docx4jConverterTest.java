@@ -18,7 +18,7 @@ public class Docx4jConverterTest extends BaseTest {
         String docxName = "错乱序号";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         Docx4jConverter docxConverter = new Docx4jConverter(inputStream, null);
-        String html = docxConverter.convert();
+        String html = docxConverter.convert().getHtml();
         FileUtils.writeStringToFile(new File(
                 rootFile, "html/" + docxName + "-docx4j.html"), html, Charset.forName("UTF-8"));
     }

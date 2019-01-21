@@ -1,6 +1,7 @@
 package com.zhihuishu.doctrans.converter;
 
 import com.zhihuishu.doctrans.model.OMathData;
+import com.zhihuishu.doctrans.model.ConvertResult;
 import com.zhihuishu.doctrans.model.WmfData;
 import com.zhihuishu.doctrans.util.RegexHelper;
 import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
@@ -30,7 +31,7 @@ public abstract class AbstractDocxConverter {
     
     protected Map<String, OMathData> oMathDatas;
     
-    public abstract String convert() throws Exception;
+    public abstract ConvertResult convert() throws Exception;
     
     protected Map<String, byte[]> convertWMFToPNG() {
         Map<String, byte[]> pngBytes = new HashMap<>();
