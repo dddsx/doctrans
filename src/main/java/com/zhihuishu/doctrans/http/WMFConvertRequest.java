@@ -3,7 +3,6 @@ package com.zhihuishu.doctrans.http;
 import com.zhihuishu.doctrans.model.WmfData;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -23,7 +22,8 @@ import static org.apache.commons.io.IOUtils.EOF;
 
 public class WMFConvertRequest {
     
-    private final static String host = "http://47.97.45.244/ImageConvert/imageHandler.ashx?action=ConvertToPngBatch";
+    private final static String CONVERT_URL = "http://imgconvert.zhihuishu.com/ImageConvert" +
+            "/imageHandler.ashx?action=ConvertToPngBatch";
     
     /** 抓包代理软件host */
     // private final static HttpHost proxy = new HttpHost("localhost", 8888);
@@ -33,11 +33,11 @@ public class WMFConvertRequest {
     /** png放大倍数，研究表明原图越大，用样式控制缩小后得到的图片越清晰 */
     private final static int PNG_MUTIPLE_SIZE = 4;
     
-    /** 预计http连接耗时5s */
+    /** 预计http建立连接耗时5s */
     private final static int HTTP_CONNECT_USE_TIME = 5000;
     
-    /** 预计每张图片转换耗时60ms */
-    private final static int EVERY_PICTURE_USE_TIME = 60;
+    /** 预计每张图片转换耗时70ms */
+    private final static int EVERY_PICTURE_USE_TIME = 70;
     
     /**
      * 调用C#服务请求转换wmf图片为png
@@ -48,12 +48,12 @@ public class WMFConvertRequest {
     public static Map<String, byte[]> uploadAndConvert(Map<String, WmfData> wmfDatas) throws IOException {
         byte[] zipData;
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(host);
+            HttpPost httpPost = new HttpPost(CONVERT_URL);
         
             int pictureNum = wmfDatas.size();
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(HTTP_CONNECT_USE_TIME + pictureNum * EVERY_PICTURE_USE_TIME)
-                    .setSocketTimeout(HTTP_CONNECT_USE_TIME + pictureNum * EVERY_PICTURE_USE_TIME)
+                    .setConnectTimeout(HTTP_CONNECT_USE_TIME)
+                    .setSocketTimeout(pictureNum * EVERY_PICTURE_USE_TIME)
                     //.setProxy(proxy)
                     .build();
             httpPost.setConfig(requestConfig);

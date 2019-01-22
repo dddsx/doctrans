@@ -13,7 +13,7 @@ public class BetterXdocreportConveterTest extends BaseTest {
     
     @Test
     public void testConvert() throws Exception {
-        String docxName = "c语言";
+        String docxName = "我的试卷";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         BetterXdocreportConveter docxConverter = new BetterXdocreportConveter(inputStream, null);
         String html = docxConverter.convert().getHtml();

@@ -14,6 +14,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * docx4j序号解析得更好, github社区也较为活跃，但缺点是源码不够规范，后期可以考虑使用docx4j实现
+ */
 public class Docx4jConverter extends AbstractDocxConverter {
     
     private WordprocessingMLPackage wordMLPackage;
