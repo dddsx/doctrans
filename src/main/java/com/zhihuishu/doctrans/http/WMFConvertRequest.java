@@ -53,7 +53,7 @@ public class WMFConvertRequest {
             int pictureNum = wmfDatas.size();
             RequestConfig requestConfig = RequestConfig.custom()
                     .setConnectTimeout(HTTP_CONNECT_USE_TIME)
-                    .setSocketTimeout(pictureNum * EVERY_PICTURE_USE_TIME)
+                    .setSocketTimeout(pictureNum * EVERY_PICTURE_USE_TIME + HTTP_CONNECT_USE_TIME)
                     //.setProxy(proxy)
                     .build();
             httpPost.setConfig(requestConfig);
