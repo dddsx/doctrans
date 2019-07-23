@@ -28,8 +28,12 @@ public class BetterXdocreportConveter extends XdocreportConverter {
             pngDatas = WMFConvertRequest.uploadAndConvert(wmfDatas);
         } catch (IOException e) {
             logger.error("wmf转换服务响应异常", e);
+            System.out.println("wmf转换服务响应异常");
+            e.printStackTrace();
         } catch (Throwable e) {
             logger.error("wmf转换服务出现未知异常", e);
+            System.out.println("wmf转换服务出现未知异常");
+            e.printStackTrace();
         }
         return pngDatas;
     }

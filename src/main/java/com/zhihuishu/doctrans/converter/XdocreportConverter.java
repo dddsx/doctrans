@@ -52,6 +52,8 @@ public class XdocreportConverter extends AbstractDocxConverter {
         ConvertResult resultWrapper = new ConvertResult();
         
         try (StringWriter htmlWriter = new StringWriter()) {
+            System.out.println("doctrans开始转化");
+            
             // 提取普通图片元数据, key为文件名, value为文件二进制数据
             // Xdocreport会将图片转换为"<img src=".../filename" >"的形式, 将图片上传到OSS后, 将src属性值替换为OSS路径
             Map<String, byte[]> imageBytes = new HashMap<>();
@@ -69,6 +71,8 @@ public class XdocreportConverter extends AbstractDocxConverter {
                 customizedVisitor.visit();
             } catch (Exception e) {
                 logger.error("自定义预处理document时出现异常", e);
+                System.out.println("自定义预处理document时出现异常");
+                e.printStackTrace();
             }
     
             // 提取wmf和omath公式元数据, 并设置占位符
@@ -114,9 +118,12 @@ public class XdocreportConverter extends AbstractDocxConverter {
             resultWrapper.setSuccessful(true);
         } catch (Throwable e) {
             logger.error("文档转换出现异常", e);
+            System.out.println("文档转换出现异常");
+            e.printStackTrace();
             resultWrapper.setSuccessful(false);
             resultWrapper.setErrorMsg(e.getMessage());
         }
+        System.out.println("doctrans转化结束");
         return resultWrapper;
     }
     

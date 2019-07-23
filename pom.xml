@@ -5,7 +5,7 @@
 
     <groupId>com.zhihuishu</groupId>
     <artifactId>doctrans</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <name>doctrans</name>
     <description>the utils to deal with word</description>
@@ -124,7 +124,7 @@
         <dependency>
             <groupId>com.able</groupId>
             <artifactId>baseftp-public</artifactId>
-            <version>20180709</version>
+            <version>20190716</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>

@@ -76,6 +76,8 @@ public class FileUploader {
                     imageUrls.putAll(singleMap);
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error("http请求异常", e);
+                    System.out.println("ftp上传出现异常");
+                    e.printStackTrace();
                     break;
                 }
             }
