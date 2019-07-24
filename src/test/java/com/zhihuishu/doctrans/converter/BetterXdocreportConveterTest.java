@@ -13,11 +13,11 @@ public class BetterXdocreportConveterTest extends BaseTest {
     
     @Test
     public void testConvert() throws Exception {
-        String docxName = "我的试卷";
+        String docxName = "智慧树题库模板";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         BetterXdocreportConveter docxConverter = new BetterXdocreportConveter(inputStream, null);
         String html = docxConverter.convert().getHtml();
         FileUtils.writeStringToFile(new File(rootFile,
-                "html/" + docxName + "-xdocreport.html"), html, Charset.forName("UTF-8"));
+                "html/" + docxName + "-Bxdocreport.html"), html, Charset.forName("UTF-8"));
     }
 }

@@ -13,7 +13,7 @@ public class XdocreportConverterTest extends BaseTest {
     
     @Test
     public void testConvert() throws Exception {
-        String docxName = "嵌套表格";
+        String docxName = "智慧树题库模板";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         XdocreportConverter docxConverter = new XdocreportConverter(inputStream, null);
         String html = docxConverter.convert().getHtml();

@@ -15,7 +15,7 @@ public class Docx4jConverterTest extends BaseTest {
     
     @Test
     public void testConvert() throws IOException, Docx4JException {
-        String docxName = "16题选项";
+        String docxName = "智慧树题库模板";
         InputStream inputStream = new FileInputStream(new File(rootFile, "docx/" + docxName + ".docx"));
         Docx4jConverter docxConverter = new Docx4jConverter(inputStream, null);
         String html = docxConverter.convert().getHtml();
