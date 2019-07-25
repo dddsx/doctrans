@@ -1,33 +1,41 @@
 package com.zhihuishu.doctrans.util;
 
+import com.zhihuishu.doctrans.BaseTest;
+import com.zhihuishu.doctrans.util.img.DefaultWMFConverter;
+import com.zhihuishu.doctrans.util.img.ImgConverter;
+import com.zhihuishu.doctrans.util.img.SVGConverter;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 
-import static com.zhihuishu.doctrans.util.ImgConverter.*;
+import static com.zhihuishu.doctrans.util.img.ImgConverter.*;
 
-public class SVGConverterTest {
+public class SVGConverterTest extends BaseTest {
     
     private final static int USECASE_NUM = 3;
     
     @Before
-    public void generateSvg() {
+    public void generateSvg() throws Exception {
         ImgConverter imgConverter = new DefaultWMFConverter();
         for (int i = 1; i <= USECASE_NUM; i++) {
-            File wmf = new File(getClass().getResource(i + EXT_WMF).getFile());
-            File svg = new File(wmf.getParentFile(), i + EXT_SVG);
-            imgConverter.convert(wmf, svg, new ImgConfig(FORMAT_SVG));
+            File wmf = new File(rootFile, "wmf/" + i + EXT_WMF);
+            File svg = new File(rootFile, "svg/" + i + EXT_SVG);
+            imgConverter.convert(new FileInputStream(wmf), FileUtils.openOutputStream(svg),
+                    new ImgConfig(FORMAT_SVG));
         }
     }
     
     @Test
-    public void testConvert() {
+    public void testConvert() throws Exception {
         ImgConverter svgConverter = new SVGConverter();
         for (int i = 1; i <= USECASE_NUM; i++) {
-            File svg = new File(getClass().getResource(i + EXT_SVG).getFile());
-            File png = new File(svg.getParentFile(), i + EXT_PNG);
-            svgConverter.convert(svg, png, new ImgConfig(FORMAT_PNG));
+            File svg = new File(rootFile, "svg/" + i + EXT_SVG);
+            File png = new File(rootFile, "png/" + i + EXT_PNG);
+            svgConverter.convert(new FileInputStream(svg), FileUtils.openOutputStream(png),
+                    new ImgConfig(FORMAT_PNG));
         }
     }
 }

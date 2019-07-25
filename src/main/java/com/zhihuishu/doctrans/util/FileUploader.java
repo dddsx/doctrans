@@ -2,94 +2,130 @@ package com.zhihuishu.doctrans.util;
 
 import com.able.base.ftp.oss.OSSPublicUploadInterface;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.zhihuishu.doctrans.util.img.ImgConverter.SYMBOL_POINT;
 
 public class FileUploader {
-
-    public static File downloadFile(String urlPath, String downloadDir) {
-        File file = null;
-        OutputStream out = null;
-        BufferedInputStream bin = null;
-        try {
-            // 统一资源
-            URL url = new URL(urlPath);
-            // 连接类的父类，抽象类
-            URLConnection urlConnection = url.openConnection();
-            // http的连接类
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-            // 设定请求的方法，默认是GET
-            httpURLConnection.setRequestMethod("GET");
-            // 设置字符编码
-            httpURLConnection.setRequestProperty("Charset", "UTF-8");
-            // 打开到此 URL 引用的资源的通信链接（如果尚未建立这样的连接）。
-            httpURLConnection.connect();
-
-            // 文件大小
-            int fileLength = httpURLConnection.getContentLength();
-
-            // 文件名
-            String filePathUrl = httpURLConnection.getURL().getFile();
-            String fileFullName = filePathUrl.substring(filePathUrl.lastIndexOf(File.separatorChar) + 1);
-
-            System.out.println("file length---->" + fileLength);
-
-            bin = new BufferedInputStream(httpURLConnection.getInputStream());
-
-            String path = downloadDir + File.separatorChar + fileFullName;
-            file = new File(path);
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
+    
+    private final static Logger logger = LoggerFactory.getLogger(FileUploader.class);
+    
+    private final static String threadNamePrefix = "doctrans-fileupload-";
+    
+    private final static AtomicInteger threadNum = new AtomicInteger(1);
+    
+    /** 创建固定大小为20的线程池，用来并发上传文件 */
+    private final static ExecutorService uploadExecutor = new ThreadPoolExecutor(
+            20,
+            20,
+            0,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(),
+            r -> {
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
+                        threadNamePrefix + threadNum.getAndIncrement());
+                if (t.getPriority() != Thread.NORM_PRIORITY) {
+                    t.setPriority(Thread.NORM_PRIORITY);
+                }
+                return t;
             }
-            out = new FileOutputStream(file);
-            int size = 0;
-            int len = 0;
-            byte[] buf = new byte[1024];
-            while ((size = bin.read(buf)) != -1) {
-                len += size;
-                out.write(buf, 0, size);
-                // 打印下载百分比
-                // System.out.println("下载了-------> " + len * 100 / fileLength +
-                // "%\n");
+    );
+    
+    private final static String UPLOAD_SUCCESS_CODE = "0";
+    
+    /**
+     * 使用多线程方式上传图片到OSS服务器
+     * @param imageBytes 图片标识 map to 图片数据
+     * @param format 图片格式
+     * @param concurrentMode 是否多线程上传
+     * @return 文件名 map to URL
+     */
+    public static Map<String, String> uploadImageToOSS(Map<String, byte[]> imageBytes, String format,
+                                                       boolean concurrentMode) {
+        Map<String, String> imageUrls = new HashMap<>();
+        
+        if (concurrentMode) {
+            List<Future<Map<String, String>>> futures = new ArrayList<>();
+            
+            // 开启上传任务
+            for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
+                futures.add(
+                    uploadExecutor.submit(
+                        () -> {
+                            String imageName = entry.getKey();
+                            byte[] bytes = entry.getValue();
+                            // 将图片上传到OSS服务器, 并获得URL
+                            String url = uploadToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
+                            return Collections.singletonMap(imageName, url);
+                        }
+                    )
+                );
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if(bin != null) {
+            
+            // 阻塞获取上传结果
+            for (Future<Map<String, String>> future : futures) {
                 try {
-                    bin.close();
-                } catch (IOException ignored) {
-
+                    Map<String, String> singleMap = future.get();
+                    imageUrls.putAll(singleMap);
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error("http请求异常", e);
+                    System.out.println("ftp上传出现异常");
+                    e.printStackTrace();
+                    break;
                 }
             }
-            if(out != null){
+        } else {
+            for (Map.Entry<String, byte[]> entry : imageBytes.entrySet()) {
+                String imageName = entry.getKey();
+                byte[] bytes = entry.getValue();
                 try {
-                    out.close();
-                } catch (IOException ignored) {
-
+                    // 将图片上传到OSS服务器, 并获得URL
+                    String url = uploadToOSS(new ByteArrayInputStream(bytes), getRandomFilename(imageName, format));
+                    imageUrls.put(entry.getKey(), url);
+                } catch (Exception e) {
+                    logger.error("http请求异常", e);
+                    break;
                 }
             }
         }
-        return file;
+        return imageUrls;
     }
-
-    public static String uploadFileToOSS(File file){
-        String ossUrl = null;
-        try {
-            ossUrl = OSSPublicUploadInterface.ftpAttachment(file, "doctrans", "docx2html");
-            if (ossUrl != null && ossUrl.length() > 0) {
-                JSONObject jsonObject = JSONObject.parseObject(ossUrl);
-                JSONObject data = jsonObject.getJSONObject("data");
-                if (data != null) {
-                    ossUrl = data.getString("path");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    
+    private static String uploadToOSS(InputStream inputStream, String fileName) {
+        String responseData = OSSPublicUploadInterface.ftpAttachment(inputStream, "doctrans",
+                "docx2html", fileName);
+        return getOssUrl(responseData);
+    }
+    
+    private static String getOssUrl(String responseData) {
+        JSONObject jsonObject = JSONObject.parseObject(responseData);
+        if ( !UPLOAD_SUCCESS_CODE.equals(jsonObject.getString("code")) ) {
+            throw new IllegalStateException("http请求异常");
         }
-        return ossUrl;
+        JSONObject data = jsonObject.getJSONObject("data");
+        return data.getString("path");
+    }
+    
+    /**
+     * 生成带格式后缀的UUID文件名
+     */
+    private static String getRandomFilename(String originName, String format) {
+        String uuid = UUIDUtils.createUUID();
+        if (format != null) {
+            return uuid + SYMBOL_POINT + format;
+        }
+        
+        if (originName.contains(SYMBOL_POINT)) {
+            format = originName.substring(originName.lastIndexOf(SYMBOL_POINT) - 1);
+            return uuid + SYMBOL_POINT + format;
+        }
+        return uuid;
     }
 }
